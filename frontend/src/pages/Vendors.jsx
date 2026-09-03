@@ -5,6 +5,7 @@ export default function Vendors() {
   const [vendors, setVendors] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editingVendor, setEditingVendor] = useState(null)
   const [formData, setFormData] = useState({
     name: "",
     contactNumber: "",
@@ -43,6 +44,37 @@ export default function Vendors() {
     setTimeout(() => setToast(null), 3000)
   }
 
+  const openCreateForm = () => {
+    setEditingVendor(null)
+    setFormData({
+      name: "",
+      contactNumber: "",
+      email: "",
+      address: "",
+      gstin: "",
+      paymentTerms: "30_DAYS",
+      openingBalance: 0,
+      notes: "",
+    })
+    setShowForm(true)
+  }
+
+  const openEditForm = (v) => {
+    setEditingVendor(v)
+    setFormData({
+      name: v.name || "",
+      contactNumber: v.phone || v.contactNumber || "",
+      email: v.email || "",
+      address: v.address || "",
+      gstin: v.gstin || "",
+      paymentTerms: v.paymentTerms || "30_DAYS",
+      openingBalance: v.openingBalance || 0,
+      notes: v.notes || "",
+    })
+    setShowForm(true)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.name.trim()) return
@@ -50,8 +82,13 @@ export default function Vendors() {
     setSubmitting(true)
     try {
       const token = localStorage.getItem("surya_bar_token")
-      const res = await fetch(`${API_BASE_URL}/api/vendors`, {
-        method: "POST",
+      const url = editingVendor
+        ? `${API_BASE_URL}/api/vendors/${editingVendor._id}`
+        : `${API_BASE_URL}/api/vendors`
+      const method = editingVendor ? "PUT" : "POST"
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -61,8 +98,9 @@ export default function Vendors() {
 
       const data = await res.json()
       if (res.ok) {
-        showToastMsg("Vendor created successfully!")
+        showToastMsg(editingVendor ? "Vendor updated successfully!" : "Vendor created successfully!")
         setShowForm(false)
+        setEditingVendor(null)
         setFormData({
           name: "",
           contactNumber: "",
@@ -75,12 +113,32 @@ export default function Vendors() {
         })
         loadVendors()
       } else {
-        alert(data.message || "Failed to create vendor")
+        alert(data.message || "Failed to save vendor")
       }
     } catch (err) {
       alert("Error: " + err.message)
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleDelete = async (v) => {
+    if (!window.confirm(`Are you sure you want to remove vendor "${v.name}"?`)) return
+
+    try {
+      const token = localStorage.getItem("surya_bar_token")
+      const res = await fetch(`${API_BASE_URL}/api/vendors/${v._id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        showToastMsg("Vendor removed successfully")
+        loadVendors()
+      } else {
+        alert("Failed to delete vendor")
+      }
+    } catch (err) {
+      alert("Error: " + err.message)
     }
   }
 
@@ -117,7 +175,14 @@ export default function Vendors() {
           </p>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              setShowForm(false)
+              setEditingVendor(null)
+            } else {
+              openCreateForm()
+            }
+          }}
           className="px-4 py-2.5 bg-slate-950 hover:bg-black active:scale-95 text-white rounded-xl text-xs sm:text-sm font-black shadow-xs transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
         >
           {showForm ? "Cancel / Close Form" : "+ Register New Vendor"}
@@ -148,12 +213,19 @@ export default function Vendors() {
         <div className="bg-white rounded-2xl shadow-xs border border-slate-200/90 p-4 sm:p-6 animate-in fade-in zoom-in-95 duration-100">
           <div className="flex justify-between items-center pb-3 border-b border-slate-200 mb-4">
             <div>
-              <h3 className="font-black text-slate-900 text-sm sm:text-base">Register Vendor / Distributor</h3>
-              <p className="text-xs text-slate-500">Add profile details to associate with inward purchase shipments</p>
+              <h3 className="font-black text-slate-900 text-sm sm:text-base">
+                {editingVendor ? `Edit Vendor: ${editingVendor.name}` : "Register Vendor / Distributor"}
+              </h3>
+              <p className="text-xs text-slate-500">
+                {editingVendor ? "Update contact, tax ID, or address details" : "Add profile details to associate with inward purchase shipments"}
+              </p>
             </div>
             <button
               type="button"
-              onClick={() => setShowForm(false)}
+              onClick={() => {
+                setShowForm(false)
+                setEditingVendor(null)
+              }}
               className="text-xs text-slate-400 hover:text-slate-700 font-bold cursor-pointer"
             >
               ✕ Close
@@ -326,6 +398,23 @@ export default function Vendors() {
                     </div>
                   )}
                 </div>
+
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => openEditForm(v)}
+                    className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition-colors"
+                  >
+                    ✏️ Edit Profile
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(v)}
+                    className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-colors"
+                  >
+                    🗑️
+                  </button>
+                </div>
               </div>
             ))
           )}
@@ -341,18 +430,19 @@ export default function Vendors() {
                 <th className="p-3.5 text-left">GSTIN Registration</th>
                 <th className="p-3.5 text-left">Depot / Location</th>
                 <th className="p-3.5 text-center">Status</th>
+                <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="p-8 text-center text-slate-400">
+                  <td colSpan="6" className="p-8 text-center text-slate-400">
                     Loading vendors...
                   </td>
                 </tr>
               ) : filteredVendors.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="p-8 text-center text-slate-400">
+                  <td colSpan="6" className="p-8 text-center text-slate-400">
                     No vendors registered yet. Click "+ Register New Vendor" above.
                   </td>
                 </tr>
@@ -364,9 +454,9 @@ export default function Vendors() {
                       {v.email && <div className="text-[10px] text-slate-400 font-normal">{v.email}</div>}
                     </td>
                     <td className="p-3.5 text-slate-800 font-medium">
-                      {v.contactNumber ? (
-                        <a href={`tel:${v.contactNumber}`} className="hover:underline">
-                          {v.contactNumber}
+                      {v.contactNumber || v.phone ? (
+                        <a href={`tel:${v.contactNumber || v.phone}`} className="hover:underline">
+                          {v.contactNumber || v.phone}
                         </a>
                       ) : (
                         <span className="text-slate-300">-</span>
@@ -386,6 +476,26 @@ export default function Vendors() {
                       <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-black rounded-md">
                         ACTIVE
                       </span>
+                    </td>
+                    <td className="p-3.5 text-right">
+                      <div className="flex justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openEditForm(v)}
+                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg text-xs border border-slate-200 transition-all cursor-pointer"
+                          title="Edit Vendor"
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(v)}
+                          className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg text-xs border border-rose-200 transition-all cursor-pointer"
+                          title="Delete Vendor"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -27,4 +27,38 @@ class VendorController {
         http_response_code(201);
         echo json_encode(["message" => "Vendor created", "id" => (string)$db->lastInsertId()]);
     }
+
+    public static function update($id) {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $db = (new Database())->getConnection();
+
+        $stmt = $db->prepare("
+            UPDATE vendors SET 
+                name = :name, 
+                contact_person = :cp, 
+                phone = :phone, 
+                email = :email, 
+                address = :address, 
+                gstin = :gstin 
+            WHERE id = :id
+        ");
+        $stmt->execute([
+            ':name' => $data['name'],
+            ':cp' => $data['contactPerson'] ?? null,
+            ':phone' => $data['phone'] ?? $data['contactNumber'] ?? null,
+            ':email' => $data['email'] ?? null,
+            ':address' => $data['address'] ?? null,
+            ':gstin' => $data['gstin'] ?? null,
+            ':id' => $id,
+        ]);
+
+        echo json_encode(["message" => "Vendor updated successfully", "id" => (string)$id]);
+    }
+
+    public static function delete($id) {
+        $db = (new Database())->getConnection();
+        $stmt = $db->prepare("UPDATE vendors SET active = 0 WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+        echo json_encode(["message" => "Vendor deleted successfully"]);
+    }
 }

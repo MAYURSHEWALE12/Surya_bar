@@ -149,13 +149,23 @@ if (preg_match('#^/api/customers/(\d+)$#', $route, $matches) && $method === 'GET
     exit;
 }
 
-// 7. Vendors & Purchases
 if ($route === '/api/vendors') {
     if ($method === 'GET') {
         VendorController::getAll();
     } elseif ($method === 'POST') {
         $user = authenticate(['ADMIN']);
         VendorController::create();
+    }
+    exit;
+}
+
+if (preg_match('#^/api/vendors/(\d+)$#', $route, $matches)) {
+    $vendorId = (int)$matches[1];
+    $user = authenticate(['ADMIN']);
+    if ($method === 'PUT') {
+        VendorController::update($vendorId);
+    } elseif ($method === 'DELETE') {
+        VendorController::delete($vendorId);
     }
     exit;
 }
