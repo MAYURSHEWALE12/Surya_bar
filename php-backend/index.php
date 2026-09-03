@@ -125,6 +125,12 @@ if ($route === '/api/sales') {
     exit;
 }
 
+if (preg_match('#^/api/sales/(\d+)/void$#', $route, $matches) && $method === 'POST') {
+    $user = authenticate(['ADMIN']);
+    SalesController::voidSale((int)$matches[1], $user);
+    exit;
+}
+
 // 6. Customers Khata
 if ($route === '/api/customers') {
     if ($method === 'GET') {

@@ -232,4 +232,88 @@ class SalesController {
             echo json_encode(["message" => "Checkout failed: " . $e->getMessage()]);
         }
     }
+
+    public static function voidSale($saleId, $currentUser) {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $reason = $data['reason'] ?? 'Voided by Admin';
+        $db = (new Database())->getConnection();
+
+        try {
+            $db->beginTransaction();
+
+            $stmt = $db->prepare("SELECT * FROM sales WHERE id = :id FOR UPDATE");
+            $stmt->execute([':id' => $saleId]);
+            $sale = $stmt->fetch();
+
+            if (!$sale) {
+                $db->rollBack();
+                http_response_code(404);
+                echo json_encode(["message" => "Sale invoice not found"]);
+                return;
+            }
+
+            if ($sale['status'] === 'VOIDED') {
+                $db->rollBack();
+                http_response_code(400);
+                echo json_encode(["message" => "Invoice is already voided"]);
+                return;
+            }
+
+            // Fetch sale items to restore inventory
+            $stmtItems = $db->prepare("SELECT * FROM sale_items WHERE sale_id = :sid");
+            $stmtItems->execute([':sid' => $saleId]);
+            $items = $stmtItems->fetchAll();
+
+            foreach ($items as $item) {
+                $stmtRestore = $db->prepare("
+                    UPDATE inventories 
+                    SET quantity = quantity + :qty 
+                    WHERE product_id = :pid AND stock_type = :stype
+                ");
+                $stmtRestore->execute([
+                    ':qty' => (int)$item['quantity'],
+                    ':pid' => (int)$item['product_id'],
+                    ':stype' => $item['stock_type']
+                ]);
+            }
+
+            // If borrow sale, reverse customer balance
+            if (!empty($sale['customer_id']) && in_array($sale['payment_method'], ['BORROW', 'CREDIT'])) {
+                $stmtCust = $db->prepare("UPDATE customers SET current_balance = GREATEST(0, current_balance - :amt) WHERE id = :cid");
+                $stmtCust->execute([
+                    ':amt' => (float)$sale['grand_total'],
+                    ':cid' => (int)$sale['customer_id']
+                ]);
+            }
+
+            // Mark invoice VOIDED
+            $stmtVoid = $db->prepare("
+                UPDATE sales 
+                SET status = 'VOIDED', void_reason = :reason, voided_at = :now 
+                WHERE id = :id
+            ");
+            $stmtVoid->execute([
+                ':reason' => $reason,
+                ':now' => date('Y-m-d H:i:s'),
+                ':id' => $saleId
+            ]);
+
+            // Log in audit trail
+            $stmtAudit = $db->prepare("INSERT INTO audit_logs (user_id, action, entity, details) VALUES (:uid, 'VOID_SALE', 'Sales', :details)");
+            $stmtAudit->execute([
+                ':uid' => $currentUser['id'] ?? 1,
+                ':details' => "Invoice #{$sale['invoice_number']} (₹{$sale['grand_total']}) voided. Reason: $reason"
+            ]);
+
+            $db->commit();
+            echo json_encode([
+                "message" => "Invoice voided successfully & stock restored to inventory",
+                "invoiceNumber" => $sale['invoice_number']
+            ]);
+        } catch (Exception $e) {
+            $db->rollBack();
+            http_response_code(500);
+            echo json_encode(["message" => "Failed to void invoice: " . $e->getMessage()]);
+        }
+    }
 }
