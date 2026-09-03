@@ -41,13 +41,20 @@ class PurchaseController {
         try {
             $db->beginTransaction();
 
-            $purchNumber = "PO-" . date("Ymd") . "-" . rand(1000, 9999);
-            $totalAmount = (float)($data['totalAmount'] ?? 0);
+            $purchNumber = !empty($data['invoiceNumber']) ? $data['invoiceNumber'] : ("PO-" . date("Ymd") . "-" . rand(1000, 9999));
+            $totalAmount = (float)($data['grandTotal'] ?? $data['totalAmount'] ?? $data['subtotal'] ?? 0);
+            
+            $vendorId = null;
+            if (!empty($data['vendor'])) {
+                $vendorId = is_array($data['vendor']) ? ($data['vendor']['_id'] ?? $data['vendor']['id'] ?? null) : $data['vendor'];
+            } elseif (!empty($data['vendorId'])) {
+                $vendorId = $data['vendorId'];
+            }
 
             $stmt = $db->prepare("INSERT INTO purchases (purchase_number, vendor_id, invoice_date, total_amount, payment_status, payment_method, notes) VALUES (:pnum, :vid, :idate, :tot, :pstat, :pmeth, :notes)");
             $stmt->execute([
                 ':pnum' => $purchNumber,
-                ':vid' => !empty($data['vendorId']) ? $data['vendorId'] : null,
+                ':vid' => !empty($vendorId) ? (int)$vendorId : null,
                 ':idate' => $data['invoiceDate'] ?? date("Y-m-d"),
                 ':tot' => $totalAmount,
                 ':pstat' => $data['paymentStatus'] ?? 'PAID',
@@ -59,7 +66,7 @@ class PurchaseController {
 
             $items = $data['items'] ?? [];
             foreach ($items as $item) {
-                $pid = (int)($item['productId'] ?? $item['id']);
+                $pid = (int)($item['product'] ?? $item['productId'] ?? $item['id'] ?? 0);
                 $stockType = $item['stockType'] ?? 'TP';
                 $qty = (int)($item['quantity'] ?? 1);
                 $pp = (float)($item['purchasePrice'] ?? 0);
@@ -81,7 +88,10 @@ class PurchaseController {
                 $stmtStock = $db->prepare("
                     INSERT INTO inventories (product_id, stock_type, enabled, quantity, purchase_price, selling_price)
                     VALUES (:pid, :stype, 1, :qty, :pp, :sp)
-                    ON DUPLICATE KEY UPDATE quantity = quantity + :qty2, purchase_price = :pp2, selling_price = :sp2
+                    ON DUPLICATE KEY UPDATE 
+                        quantity = quantity + :qty2, 
+                        purchase_price = :pp2,
+                        selling_price = CASE WHEN :sp2 > 0 THEN :sp3 ELSE selling_price END
                 ");
                 $stmtStock->execute([
                     ':pid' => $pid,
@@ -91,7 +101,8 @@ class PurchaseController {
                     ':sp' => $sp,
                     ':qty2' => $qty,
                     ':pp2' => $pp,
-                    ':sp2' => $sp
+                    ':sp2' => $sp,
+                    ':sp3' => $sp
                 ]);
             }
 
