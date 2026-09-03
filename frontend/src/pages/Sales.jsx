@@ -50,10 +50,16 @@ export default function Sales() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  const handleVoidSale = async (saleId, invoiceNum) => {
-    if (!window.confirm(`Are you sure you want to VOID invoice ${invoiceNum}? This will restore all bottle quantities back into inventory.`)) {
-      return
-    }
+  const [voidConfirmSale, setVoidConfirmSale] = useState(null) // { id, invoiceNumber, grandTotal, items }
+
+  const handleVoidSale = (sale) => {
+    setVoidConfirmSale(sale)
+  }
+
+  const executeVoidSale = async () => {
+    if (!voidConfirmSale) return
+    const saleId = voidConfirmSale._id || voidConfirmSale.id
+    const invoiceNum = voidConfirmSale.invoiceNumber
 
     setVoidingId(saleId)
     try {
@@ -64,12 +70,13 @@ export default function Sales() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ reason: "Voided from Sales manager" }),
+        body: JSON.stringify({ reason: "Voided by Admin" }),
       })
 
       const data = await res.json()
       if (res.ok) {
-        showToast(`Invoice ${invoiceNum} has been voided & stock restored!`)
+        showToast(`Invoice #${invoiceNum} has been voided & bottles returned to inventory!`)
+        setVoidConfirmSale(null)
         setActiveModalSale(null)
         await fetchSalesData()
       } else {
@@ -869,7 +876,7 @@ export default function Sales() {
                           </button>
                           {role === "ADMIN" && !isVoided && (
                             <button
-                              onClick={() => handleVoidSale(sale._id, sale.invoiceNumber)}
+                              onClick={() => handleVoidSale(sale)}
                               disabled={voidingId === sale._id}
                               title="Void Bill & Restore Inventory"
                               className="px-2.5 py-1 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
@@ -1006,7 +1013,7 @@ export default function Sales() {
               <div className="flex gap-2">
                 {role === "ADMIN" && activeModalSale.status !== "VOIDED" && (
                   <button
-                    onClick={() => handleVoidSale(activeModalSale._id, activeModalSale.invoiceNumber)}
+                    onClick={() => handleVoidSale(activeModalSale)}
                     className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
                   >
                     Void Sale
@@ -1017,6 +1024,57 @@ export default function Sales() {
                   className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-300 cursor-pointer"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Styled Void Confirmation Modal */}
+      {voidConfirmSale && (
+        <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-100">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-150">
+            <div className="p-6 text-center space-y-4">
+              <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-inner">
+                ⚠️
+              </div>
+
+              <div>
+                <h3 className="text-lg font-black text-slate-900">
+                  Void Invoice #{voidConfirmSale.invoiceNumber}?
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  This action will cancel this customer bill of <strong className="text-slate-900">₹{(voidConfirmSale.grandTotal || 0).toLocaleString()}</strong> and automatically restore all bottle quantities back into live bar inventory.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-left text-xs space-y-1 max-h-36 overflow-y-auto">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bottles To Return to Stock:</span>
+                {voidConfirmSale.items?.map((it, idx) => (
+                  <div key={idx} className="flex justify-between text-slate-700 font-medium">
+                    <span>{it.productName || it.product?.name || "Item"} ({it.stockType})</span>
+                    <strong className="text-emerald-700">+ {it.quantity} units</strong>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setVoidConfirmSale(null)}
+                  disabled={voidingId !== null}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={executeVoidSale}
+                  disabled={voidingId !== null}
+                  className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-xl text-xs shadow-xs transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {voidingId ? "Restoring Stock..." : "Confirm & Void Bill"}
                 </button>
               </div>
             </div>
