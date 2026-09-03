@@ -21,6 +21,7 @@ require_once __DIR__ . "/controllers/VendorController.php";
 require_once __DIR__ . "/controllers/PurchaseController.php";
 require_once __DIR__ . "/controllers/UserController.php";
 require_once __DIR__ . "/controllers/AuditController.php";
+require_once __DIR__ . "/controllers/BackupController.php";
 require_once __DIR__ . "/middleware/auth.php";
 
 $requestUri = $_SERVER['REQUEST_URI'];
@@ -173,6 +174,19 @@ if ($route === '/api/users') {
 if ($route === '/api/audit-logs' && $method === 'GET') {
     $user = authenticate(['ADMIN']);
     AuditController::getAll();
+    exit;
+}
+
+// 9. Database Backup & Stats
+if ($route === '/api/backup/stats' && $method === 'GET') {
+    $user = authenticate(['ADMIN']);
+    BackupController::getStats();
+    exit;
+}
+
+if ($route === '/api/backup/export' && $method === 'GET') {
+    $user = authenticate(['ADMIN']);
+    BackupController::exportBackup($user);
     exit;
 }
 
