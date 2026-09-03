@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { getProducts, getCategories, getSales, createSale } from "../services/api"
 import ThermalReceipt from "../components/ThermalReceipt"
 import CustomerSelect from "../components/CustomerSelect"
+import { PosCatalogSkeleton } from "../components/Skeleton"
 
 export default function Pos() {
   const [products, setProducts] = useState([])
@@ -451,7 +452,7 @@ export default function Pos() {
         {/* Product Cards Grid */}
         <div className="flex-1 p-3 sm:p-4 overflow-y-auto no-scrollbar bg-slate-50/50">
           {loading ? (
-            <div className="text-center py-16 text-slate-500 text-sm font-medium">Loading POS catalog...</div>
+            <PosCatalogSkeleton count={10} />
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-16 text-slate-400">
               <p className="text-base font-bold">No products found</p>

@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../store/authStore"
 import CustomSelect from "../components/CustomSelect"
+import { DashboardSkeleton } from "../components/Skeleton"
 import {
   ResponsiveContainer,
   BarChart,
@@ -252,11 +253,7 @@ export default function Dashboard() {
   }, [timeRange])
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-slate-500 font-bold text-xs">
-        Loading live business dashboard...
-      </div>
-    )
+    return <DashboardSkeleton />
   }
 
   return (

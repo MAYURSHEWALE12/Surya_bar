@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../store/authStore"
 import { exportStyledAnalyticsExcel } from "../utils/excelExport"
 import CustomSelect from "../components/CustomSelect"
+import { TableSkeleton, Skeleton } from "../components/Skeleton"
 
 export default function Sales() {
   const [sales, setSales] = useState([])
@@ -594,7 +595,21 @@ export default function Sales() {
         {/* Mobile Receipt Cards View (< md screens) */}
         <div className="block md:hidden divide-y divide-slate-100">
           {loading ? (
-            <div className="p-8 text-center text-slate-400 text-xs">Loading sales records...</div>
+            <div className="p-4 space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="p-3.5 bg-slate-50 rounded-xl space-y-2 border border-slate-100">
+                  <div className="flex justify-between items-center">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                  <Skeleton className="h-3 w-40" />
+                  <div className="flex justify-between pt-2">
+                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-5 w-20" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : filteredSales.length === 0 ? (
             <div className="p-8 text-center text-slate-400 text-xs">No sales receipts match your criteria.</div>
           ) : (
@@ -694,11 +709,20 @@ export default function Sales() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                <tr>
-                  <td colSpan="10" className="p-10 text-center text-slate-400 font-medium">
-                    Loading sales records...
-                  </td>
-                </tr>
+                Array.from({ length: 5 }).map((_, r) => (
+                  <tr key={r} className="p-3.5">
+                    <td colSpan="10" className="p-3.5">
+                      <div className="flex gap-4 items-center">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-4 flex-1" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
               ) : filteredSales.length === 0 ? (
                 <tr>
                   <td colSpan="10" className="p-12 text-center text-slate-400">
