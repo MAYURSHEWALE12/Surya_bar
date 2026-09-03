@@ -195,6 +195,15 @@ class ProductController {
         $data = json_decode(file_get_contents("php://input"), true);
         $db = (new Database())->getConnection();
 
+        $brandId = null;
+        if (!empty($data['brand'])) {
+            $brandId = is_array($data['brand']) ? ($data['brand']['_id'] ?? $data['brand']['id'] ?? null) : $data['brand'];
+        }
+        $categoryId = null;
+        if (!empty($data['category'])) {
+            $categoryId = is_array($data['category']) ? ($data['category']['_id'] ?? $data['category']['id'] ?? null) : $data['category'];
+        }
+
         try {
             $db->beginTransaction();
 
@@ -210,8 +219,8 @@ class ProductController {
             ");
             $stmt->execute([
                 ':name' => $data['name'],
-                ':brand_id' => !empty($data['brand']) ? $data['brand'] : null,
-                ':category_id' => !empty($data['category']) ? $data['category'] : null,
+                ':brand_id' => !empty($brandId) ? (int)$brandId : null,
+                ':category_id' => !empty($categoryId) ? (int)$categoryId : null,
                 ':size' => !empty($data['size']) ? $data['size'] : '750ml',
                 ':description' => !empty($data['description']) ? $data['description'] : null,
                 ':active' => isset($data['active']) ? ($data['active'] ? 1 : 0) : 1,
