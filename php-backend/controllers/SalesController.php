@@ -71,8 +71,28 @@ class SalesController {
             $discountAmount = (float)($data['discountAmount'] ?? 0);
             $grandTotal = (float)($data['grandTotal'] ?? 0);
             $paymentMethod = $data['paymentMethod'] ?? 'CASH';
-            $customerId = !empty($data['customerId']) ? $data['customerId'] : null;
+            $customerId = !empty($data['customerId']) ? (int)$data['customerId'] : null;
+            $customerName = trim($data['customerName'] ?? '');
+            $customerPhone = preg_replace('/\D/', '', $data['customerPhone'] ?? '');
             $cashierId = $currentUser['id'] ?? 1;
+
+            // Auto-create or link customer if name & phone provided (Borrow billing)
+            if (!$customerId && !empty($customerPhone)) {
+                $stmtCustCheck = $db->prepare("SELECT id FROM customers WHERE phone = :phone LIMIT 1");
+                $stmtCustCheck->execute([':phone' => $customerPhone]);
+                $foundId = $stmtCustCheck->fetchColumn();
+
+                if ($foundId) {
+                    $customerId = (int)$foundId;
+                } else {
+                    $stmtNewCust = $db->prepare("INSERT INTO customers (name, phone, credit_limit, current_balance) VALUES (:name, :phone, 10000.00, 0)");
+                    $stmtNewCust->execute([
+                        ':name' => !empty($customerName) ? $customerName : 'Borrow Customer',
+                        ':phone' => $customerPhone
+                    ]);
+                    $customerId = (int)$db->lastInsertId();
+                }
+            }
 
             $stmt = $db->prepare("
                 INSERT INTO sales (invoice_number, customer_id, cashier_id, subtotal, discount_type, discount_value, discount_amount, grand_total, payment_method, status)

@@ -91,11 +91,24 @@ if ($route === '/api/sales') {
 // 6. Customers Khata
 if ($route === '/api/customers') {
     if ($method === 'GET') {
+        $user = authenticate();
         CustomerController::getAll();
     } elseif ($method === 'POST') {
         $user = authenticate();
         CustomerController::create();
     }
+    exit;
+}
+
+if (preg_match('#^/api/customers/(\d+)/payments$#', $route, $matches) && $method === 'POST') {
+    $user = authenticate();
+    CustomerController::recordPayment((int)$matches[1], $user);
+    exit;
+}
+
+if (preg_match('#^/api/customers/(\d+)$#', $route, $matches) && $method === 'GET') {
+    $user = authenticate();
+    CustomerController::getStatement((int)$matches[1]);
     exit;
 }
 
