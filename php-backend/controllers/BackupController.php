@@ -73,4 +73,64 @@ class BackupController {
             echo json_encode(["message" => "Backup export failed: " . $e->getMessage()]);
         }
     }
+
+    public static function restoreBackup($currentUser) {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $db = (new Database())->getConnection();
+
+        $backupData = $data['backupData'] ?? $data;
+        if (empty($backupData) || empty($backupData['data'])) {
+            http_response_code(400);
+            echo json_encode(["message" => "Invalid backup snapshot payload"]);
+            return;
+        }
+
+        try {
+            $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
+            $db->beginTransaction();
+
+            $tables = [
+                'users', 'categories', 'brands', 'products', 'inventories', 
+                'customers', 'credit_transactions', 'sales', 'sale_items', 
+                'vendors', 'purchases', 'purchase_items', 'audit_logs'
+            ];
+
+            $restoredCounts = [];
+
+            foreach ($tables as $tbl) {
+                if (isset($backupData['data'][$tbl]) && is_array($backupData['data'][$tbl])) {
+                    $rows = $backupData['data'][$tbl];
+                    $db->exec("DELETE FROM `$tbl`");
+
+                    if (!empty($rows)) {
+                        $firstRow = $rows[0];
+                        $columns = array_keys($firstRow);
+                        $colList = implode("`, `", $columns);
+                        $paramList = implode(", ", array_map(fn($c) => ":$c", $columns));
+
+                        $stmt = $db->prepare("INSERT INTO `$tbl` (`$colList`) VALUES ($paramList)");
+                        foreach ($rows as $row) {
+                            $stmt->execute($row);
+                        }
+                    }
+                    $restoredCounts[$tbl] = count($rows);
+                }
+            }
+
+            $db->commit();
+            $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
+
+            echo json_encode([
+                "success" => true,
+                "message" => "Database successfully restored from JSON backup snapshot.",
+                "meta" => $backupData['meta'] ?? null,
+                "restoredCounts" => $restoredCounts
+            ]);
+        } catch (Exception $e) {
+            $db->rollBack();
+            $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
+            http_response_code(500);
+            echo json_encode(["message" => "Database restore failed: " . $e->getMessage()]);
+        }
+    }
 }

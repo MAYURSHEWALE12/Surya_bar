@@ -190,6 +190,12 @@ if ($route === '/api/backup/export' && $method === 'GET') {
     exit;
 }
 
+if ($route === '/api/backup/restore' && $method === 'POST') {
+    $user = authenticate(['ADMIN']);
+    BackupController::restoreBackup($user);
+    exit;
+}
+
 // 404
 http_response_code(404);
 echo json_encode(["message" => "Endpoint not found: " . $route]);
