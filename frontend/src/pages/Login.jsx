@@ -4,8 +4,8 @@ import { useAuthStore } from "../store/authStore"
 
 export default function Login() {
   const [activeRoleTab, setActiveRoleTab] = useState("ADMIN") // "ADMIN" | "CASHIER"
-  const [email, setEmail] = useState("admin@suryabar.com")
-  const [password, setPassword] = useState("admin123")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
@@ -15,13 +15,6 @@ export default function Login() {
   const handleRoleTabChange = (role) => {
     setActiveRoleTab(role)
     setErrorMessage("")
-    if (role === "ADMIN") {
-      setEmail("admin@suryabar.com")
-      setPassword("admin123")
-    } else {
-      setEmail("cashier@suryabar.com")
-      setPassword("cashier123")
-    }
   }
 
   const handleLogin = async (e) => {
@@ -174,16 +167,6 @@ export default function Login() {
                 {loading ? "Signing In..." : "Sign In to Terminal"}
               </button>
             </form>
-          </div>
-
-          {/* Quick Help Footer */}
-          <div className="p-4 bg-slate-50 border-t border-slate-200 text-center text-[11px] text-slate-500 space-y-1">
-            <div className="flex justify-center items-center gap-3 text-[10px] font-mono text-slate-600">
-              <span>Admin: <strong>admin@suryabar.com</strong> (admin123)</span>
-            </div>
-            <div className="flex justify-center items-center gap-3 text-[10px] font-mono text-slate-600">
-              <span>Cashier: <strong>cashier@suryabar.com</strong> (cashier123)</span>
-            </div>
           </div>
         </div>
       </div>
