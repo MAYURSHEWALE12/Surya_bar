@@ -12,8 +12,15 @@ class InventoryController {
                 p.name as productName,
                 p.size,
                 p.unit,
-                c.name as categoryName,
-                b.name as brandName,
+                JSON_OBJECT(
+                    'id', p.id,
+                    '_id', p.id,
+                    'name', p.name,
+                    'size', p.size,
+                    'unit', p.unit,
+                    'category', JSON_OBJECT('id', c.id, 'name', c.name),
+                    'brand', JSON_OBJECT('id', b.id, 'name', b.name)
+                ) as product,
                 i.stock_type as stockType,
                 i.enabled,
                 i.quantity,
@@ -33,6 +40,10 @@ class InventoryController {
         foreach ($invs as &$inv) {
             $inv['_id'] = (string)$inv['_id'];
             $inv['productId'] = (string)$inv['productId'];
+            $inv['product'] = json_decode($inv['product'], true);
+            $inv['quantity'] = (int)$inv['quantity'];
+            $inv['purchasePrice'] = (float)$inv['purchasePrice'];
+            $inv['sellingPrice'] = (float)$inv['sellingPrice'];
             $inv['enabled'] = (bool)$inv['enabled'];
         }
         echo json_encode($invs);
