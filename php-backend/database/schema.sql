@@ -223,4 +223,37 @@ INSERT INTO `brands` (`id`, `name`, `description`) VALUES
 (16, 'Marlboro', 'Philip Morris')
 ON DUPLICATE KEY UPDATE `id`=`id`;
 
+-- Starter Products
+INSERT INTO `products` (`id`, `name`, `brand_id`, `category_id`, `size`, `unit`, `barcode`, `sku`) VALUES
+(1, 'Royal Challenge Premium', 1, 1, '750ml', 'bottle', '890103001', 'RC-750'),
+(2, 'Blenders Pride Rare', 6, 1, '750ml', 'bottle', '890103002', 'BP-750'),
+(3, 'Kingfisher Premium Lager', 7, 2, '650ml', 'bottle', '890103003', 'KF-650'),
+(4, 'Budweiser Magnum Strong', 8, 2, '650ml', 'bottle', '890103004', 'BUD-650'),
+(5, 'Old Monk Legend Rum', 11, 3, '750ml', 'bottle', '890103005', 'OM-750'),
+(6, 'Magic Moments Grain Vodka', 13, 4, '750ml', 'bottle', '890103006', 'MM-750'),
+(7, 'Classic Regular 20s Pack', 15, 8, 'Pack', 'packet', '890103007', 'CLS-20'),
+(8, 'Gold Flake Kings 10s', 14, 8, 'Pack', 'packet', '890103008', 'GFK-10')
+ON DUPLICATE KEY UPDATE `id`=`id`;
+
+-- Dual TP and Non-TP Starter Stock
+INSERT INTO `inventories` (`product_id`, `stock_type`, `enabled`, `quantity`, `purchase_price`, `selling_price`, `min_stock`) VALUES
+(1, 'TP', 1, 45, 620.00, 850.00, 5),
+(1, 'NON_TP', 1, 60, 580.00, 780.00, 5),
+(2, 'TP', 1, 30, 720.00, 980.00, 5),
+(2, 'NON_TP', 1, 40, 680.00, 920.00, 5),
+(3, 'TP', 1, 120, 140.00, 220.00, 12),
+(3, 'NON_TP', 1, 80, 130.00, 200.00, 12),
+(4, 'TP', 1, 90, 170.00, 260.00, 10),
+(4, 'NON_TP', 1, 50, 160.00, 240.00, 10),
+(5, 'TP', 1, 55, 450.00, 650.00, 5),
+(5, 'NON_TP', 1, 70, 420.00, 600.00, 5),
+(6, 'TP', 1, 35, 510.00, 720.00, 5),
+(6, 'NON_TP', 1, 45, 480.00, 680.00, 5),
+(7, 'TP', 1, 50, 280.00, 360.00, 5),
+(7, 'NON_TP', 1, 100, 270.00, 340.00, 10),
+(8, 'TP', 1, 80, 150.00, 190.00, 10),
+(8, 'NON_TP', 1, 120, 140.00, 180.00, 10)
+ON DUPLICATE KEY UPDATE `id`=`id`;
+
 COMMIT;
+
