@@ -32,13 +32,26 @@ class SalesController {
 
         foreach ($sales as &$sale) {
             $sale['_id'] = (string)$sale['_id'];
+            $sale['subtotal'] = (float)$sale['subtotal'];
+            $sale['discount'] = (float)$sale['discountAmount'];
+            $sale['discountValue'] = (float)$sale['discountValue'];
+            $sale['discountAmount'] = (float)$sale['discountAmount'];
+            $sale['tax'] = (float)$sale['tax'];
+            $sale['grandTotal'] = (float)$sale['grandTotal'];
             $sale['customer'] = json_decode($sale['customer'], true);
             $sale['cashier'] = json_decode($sale['cashier'], true);
 
             // Fetch items
             $stmtItems = $db->prepare("SELECT product_id as productId, product_name as productName, stock_type as stockType, size, quantity, unit_price as unitPrice, total FROM sale_items WHERE sale_id = :sid");
             $stmtItems->execute([':sid' => $sale['_id']]);
-            $sale['items'] = $stmtItems->fetchAll();
+            $items = $stmtItems->fetchAll();
+            foreach ($items as &$item) {
+                $item['productId'] = (string)$item['productId'];
+                $item['quantity'] = (int)$item['quantity'];
+                $item['unitPrice'] = (float)$item['unitPrice'];
+                $item['total'] = (float)$item['total'];
+            }
+            $sale['items'] = $items;
         }
 
         echo json_encode($sales);
