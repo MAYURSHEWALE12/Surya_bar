@@ -15,8 +15,8 @@ class CustomerController {
                 c.current_balance as currentBalance, 
                 c.active, 
                 c.created_at as createdAt,
-                COALESCE((SELECT SUM(amount) FROM credit_transactions WHERE customer_id = c.id AND type = 'BORROW'), 0) as totalBorrowed,
-                COALESCE((SELECT SUM(amount) FROM credit_transactions WHERE customer_id = c.id AND type = 'PAYMENT'), 0) as totalPaid
+                COALESCE((SELECT SUM(amount) FROM credit_transactions WHERE customer_id = c.id AND type IN ('BORROW', 'DEBIT_SALE')), 0) as totalBorrowed,
+                COALESCE((SELECT SUM(amount) FROM credit_transactions WHERE customer_id = c.id AND type IN ('PAYMENT', 'CREDIT_PAYMENT')), 0) as totalPaid
             FROM customers c 
             WHERE c.active = 1 
             ORDER BY c.current_balance DESC, c.name ASC
@@ -113,9 +113,29 @@ class CustomerController {
         try {
             $db->beginTransaction();
 
-            $stmt = $db->prepare("SELECT current_balance FROM customers WHERE id = :id FOR UPDATE");
+            $stmt = $db->prepare("SELECT current_balance, name, phone FROM customers WHERE id = :id FOR UPDATE");
             $stmt->execute([':id' => $id]);
-            $prevBalance = (float)$stmt->fetchColumn();
+            $customerRow = $stmt->fetch();
+
+            if (!$customerRow) {
+                $db->rollBack();
+                http_response_code(404);
+                echo json_encode(["message" => "Customer not found"]);
+                return;
+            }
+
+            $prevBalance = (float)$customerRow['current_balance'];
+
+            if ($prevBalance <= 0) {
+                $db->rollBack();
+                http_response_code(400);
+                echo json_encode(["message" => "Customer has zero outstanding balance. No settlement required."]);
+                return;
+            }
+
+            if ($amount > $prevBalance) {
+                $amount = $prevBalance; // Cap repayment to exact outstanding balance
+            }
 
             $newBalance = max(0, $prevBalance - $amount);
 
@@ -131,12 +151,24 @@ class CustomerController {
                 ':amt' => $amount,
                 ':bal' => $newBalance,
                 ':pmeth' => $paymentMethod,
-                ':notes' => $notes,
+                ':notes' => !empty($notes) ? $notes : "Repayment received via $paymentMethod",
                 ':uid' => $currentUser['id'] ?? 1
             ]);
 
             $db->commit();
-            echo json_encode(["message" => "Repayment recorded successfully", "newBalance" => $newBalance]);
+            echo json_encode([
+                "message" => "Repayment recorded successfully",
+                "newBalance" => $newBalance,
+                "settlementReceipt" => [
+                    "customerName" => $customerRow['name'],
+                    "customerPhone" => $customerRow['phone'],
+                    "amountPaid" => $amount,
+                    "previousBalance" => $prevBalance,
+                    "remainingBalance" => $newBalance,
+                    "paymentMethod" => $paymentMethod,
+                    "date" => date("Y-m-d H:i:s")
+                ]
+            ]);
         } catch (Exception $e) {
             $db->rollBack();
             http_response_code(500);
