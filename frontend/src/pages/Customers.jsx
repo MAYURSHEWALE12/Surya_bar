@@ -526,7 +526,7 @@ export default function Customers() {
                   <div
                     key={tx._id}
                     className={`p-3.5 rounded-2xl border transition-all ${
-                      tx.type === 'DEBIT_SALE'
+                      tx.type === 'DEBIT_SALE' || tx.type === 'BORROW'
                         ? 'bg-white border-slate-200 shadow-xs'
                         : 'bg-emerald-50/40 border-emerald-200'
                     }`}
@@ -534,22 +534,22 @@ export default function Customers() {
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
-                          tx.type === 'DEBIT_SALE'
+                          tx.type === 'DEBIT_SALE' || tx.type === 'BORROW'
                             ? 'bg-rose-100 text-rose-800'
                             : 'bg-emerald-100 text-emerald-800'
                         }`}>
-                          {tx.type === 'DEBIT_SALE' ? 'BILL BORROWED' : 'PAYMENT SETTLED'}
+                          {tx.type === 'DEBIT_SALE' || tx.type === 'BORROW' ? 'BILL BORROWED' : 'PAYMENT SETTLED'}
                         </span>
                         <span className="font-mono text-xs text-slate-500">{new Date(tx.createdAt).toLocaleString()}</span>
                       </div>
                       <span className={`font-black text-sm ${
-                        tx.type === 'DEBIT_SALE' ? 'text-rose-700' : 'text-emerald-700'
+                        tx.type === 'DEBIT_SALE' || tx.type === 'BORROW' ? 'text-rose-700' : 'text-emerald-700'
                       }`}>
-                        {tx.type === 'DEBIT_SALE' ? `+ ₹${tx.amount?.toLocaleString()}` : `- ₹${tx.amount?.toLocaleString()}`}
+                        {tx.type === 'DEBIT_SALE' || tx.type === 'BORROW' ? `+ ₹${tx.amount?.toLocaleString()}` : `- ₹${tx.amount?.toLocaleString()}`}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-700 font-medium mt-1.5">{tx.notes || (tx.type === 'DEBIT_SALE' ? 'Counter Bill' : 'Repayment')}</p>
+                    <p className="text-xs text-slate-700 font-medium mt-1.5">{tx.notes || (tx.type === 'DEBIT_SALE' || tx.type === 'BORROW' ? 'Counter Bill' : 'Repayment')}</p>
 
                     {tx.sale && tx.sale.items && (
                       <div className="mt-2 bg-slate-50 p-2 rounded-xl text-[11px] text-slate-600 border border-slate-100 space-y-0.5">
