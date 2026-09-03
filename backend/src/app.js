@@ -19,7 +19,6 @@ app.use(
     exposedHeaders: ["Content-Disposition"],
   })
 )
-app.options("*", cors()) // Handle all preflight requests explicitly
 app.use(express.json({ limit: "50mb" })) // Support large backup uploads
 
 // Routes
