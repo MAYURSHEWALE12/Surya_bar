@@ -79,7 +79,7 @@ class PurchaseController {
                 $vendorId = $data['vendorId'];
             }
 
-            $stmt = $db->prepare("INSERT INTO purchases (purchase_number, vendor_id, invoice_date, total_amount, payment_status, payment_method, notes) VALUES (:pnum, :vid, :idate, :tot, :pstat, :pmeth, :notes)");
+            $stmt = $db->prepare("INSERT INTO purchases (purchase_number, vendor_id, invoice_date, total_amount, payment_status, payment_method, notes, created_at) VALUES (:pnum, :vid, :idate, :tot, :pstat, :pmeth, :notes, :created)");
             $stmt->execute([
                 ':pnum' => $purchNumber,
                 ':vid' => !empty($vendorId) ? (int)$vendorId : null,
@@ -88,6 +88,7 @@ class PurchaseController {
                 ':pstat' => $data['paymentStatus'] ?? 'PAID',
                 ':pmeth' => $data['paymentMethod'] ?? 'BANK_TRANSFER',
                 ':notes' => $data['notes'] ?? null,
+                ':created' => date('Y-m-d H:i:s'),
             ]);
 
             $purchaseId = $db->lastInsertId();

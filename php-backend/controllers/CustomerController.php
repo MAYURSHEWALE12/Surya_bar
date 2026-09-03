@@ -87,6 +87,7 @@ class CustomerController {
             $tx['_id'] = (string)$tx['_id'];
             $tx['amount'] = (float)$tx['amount'];
             $tx['balanceAfter'] = (float)$tx['balanceAfter'];
+            $tx['createdAt'] = date('c', strtotime($tx['createdAt']));
             $tx['sale'] = json_decode($tx['sale'], true);
         }
 

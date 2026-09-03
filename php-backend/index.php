@@ -182,6 +182,17 @@ if ($route === '/api/users') {
     exit;
 }
 
+if (preg_match('#^/api/users/(\d+)$#', $route, $matches)) {
+    $userId = (int)$matches[1];
+    $user = authenticate(['ADMIN']);
+    if ($method === 'PUT') {
+        UserController::update($userId);
+    } elseif ($method === 'DELETE') {
+        UserController::delete($userId, $user);
+    }
+    exit;
+}
+
 if ($route === '/api/audit-logs' && $method === 'GET') {
     $user = authenticate(['ADMIN']);
     AuditController::getAll();

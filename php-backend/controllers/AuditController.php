@@ -14,6 +14,7 @@ class AuditController {
         $logs = $stmt->fetchAll();
         foreach ($logs as &$l) {
             $l['_id'] = (string)$l['_id'];
+            $l['createdAt'] = date('c', strtotime($l['createdAt']));
             $l['user'] = json_decode($l['user'], true);
         }
         echo json_encode($logs);

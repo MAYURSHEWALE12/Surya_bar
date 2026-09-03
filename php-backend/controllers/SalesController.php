@@ -112,8 +112,8 @@ class SalesController {
             }
 
             $stmt = $db->prepare("
-                INSERT INTO sales (invoice_number, customer_id, cashier_id, subtotal, discount_type, discount_value, discount_amount, grand_total, payment_method, status)
-                VALUES (:inv, :cid, :uid, :sub, :dtype, :dval, :damt, :grand, :pay, 'ACTIVE')
+                INSERT INTO sales (invoice_number, customer_id, cashier_id, subtotal, discount_type, discount_value, discount_amount, grand_total, payment_method, status, created_at)
+                VALUES (:inv, :cid, :uid, :sub, :dtype, :dval, :damt, :grand, :pay, 'ACTIVE', :created)
             ");
             $stmt->execute([
                 ':inv' => $invoiceNum,
@@ -125,6 +125,7 @@ class SalesController {
                 ':damt' => $discountAmount,
                 ':grand' => $grandTotal,
                 ':pay' => $paymentMethod,
+                ':created' => date('Y-m-d H:i:s'),
             ]);
 
             $saleId = $db->lastInsertId();
