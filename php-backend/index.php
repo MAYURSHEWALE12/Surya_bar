@@ -58,11 +58,21 @@ if ($route === '/api/products') {
 
 // 3. Categories & Brands
 if ($route === '/api/categories') {
-    MetaController::getCategories();
+    if ($method === 'POST') {
+        $user = authenticate(['ADMIN']);
+        MetaController::createCategory();
+    } else {
+        MetaController::getCategories();
+    }
     exit;
 }
 if ($route === '/api/brands') {
-    MetaController::getBrands();
+    if ($method === 'POST') {
+        $user = authenticate(['ADMIN']);
+        MetaController::createBrand();
+    } else {
+        MetaController::getBrands();
+    }
     exit;
 }
 
