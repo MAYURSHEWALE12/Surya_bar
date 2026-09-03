@@ -14,14 +14,17 @@ export default function CustomSelect({
   const dropdownRef = useRef(null)
 
   // Normalize options to { value, label }
-  const normalizedOptions = options.map((opt) => {
+  const normalizedOptions = options.map((opt, index) => {
     if (typeof opt === "object" && opt !== null) {
+      const val = opt.value ?? opt._id ?? opt.id ?? opt.name ?? `opt-${index}`
+      const lbl = opt.label ?? opt.name ?? (opt.value ? String(opt.value) : `Option ${index + 1}`)
       return {
-        value: opt.value ?? opt._id ?? opt.id,
-        label: opt.label ?? opt.name ?? String(opt.value),
+        value: String(val),
+        label: String(lbl),
+        key: `opt-${val}-${index}`,
       }
     }
-    return { value: opt, label: String(opt) }
+    return { value: String(opt), label: String(opt), key: `opt-${opt}-${index}` }
   })
 
   // Outside click listener
@@ -114,7 +117,7 @@ export default function CustomSelect({
                 const isSelected = String(opt.value) === String(value)
                 return (
                   <div
-                    key={opt.value}
+                    key={opt.key}
                     onClick={() => handleSelect(opt.value)}
                     className={`px-3.5 py-2 mx-1 rounded-xl text-xs sm:text-sm cursor-pointer transition-colors flex items-center justify-between ${
                       isSelected
