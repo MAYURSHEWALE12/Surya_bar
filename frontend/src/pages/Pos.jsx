@@ -188,8 +188,10 @@ export default function Pos() {
           quantity: item.quantity + 1,
           total: (item.quantity + 1) * price,
         }
+        triggerShortcutNotification(`+1 ${product.name} (${stockType})`)
         return updated
       } else {
+        triggerShortcutNotification(`Added ${product.name} (${stockType})`)
         return [
           ...prev,
           {

@@ -190,6 +190,7 @@ export default function AdminPos() {
       updated[existingIndex].quantity += 1
       updated[existingIndex].total = updated[existingIndex].quantity * updated[existingIndex].unitPrice
       setCart(updated)
+      triggerShortcutNotification(`+1 ${product.name} (${stockType})`)
     } else {
       setCart([
         ...cart,
@@ -205,6 +206,7 @@ export default function AdminPos() {
           total: price,
         },
       ])
+      triggerShortcutNotification(`Added ${product.name} (${stockType})`)
     }
   }
 

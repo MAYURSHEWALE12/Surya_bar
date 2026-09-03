@@ -28,9 +28,11 @@ import CashierSidebar from "./layouts/CashierSidebar"
 import "./index.css"
 
 import { API_BASE_URL } from "./config/api"
+import { useThemeStore } from "./store/themeStore"
 
 function App() {
   const { user, isAuthenticated, logout, checkAuth, role } = useAuthStore()
+  const { isDark, toggleTheme, initTheme } = useThemeStore()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     return localStorage.getItem("sidebar_collapsed") === "true"
   })
@@ -43,6 +45,7 @@ function App() {
   }
 
   useEffect(() => {
+    initTheme()
     checkAuth()
 
     // Warm up Render backend immediately on page open & keep alive every 10 min while app is open
@@ -62,7 +65,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       ) : (
-        <div className="flex h-screen w-screen overflow-hidden bg-slate-50 text-slate-900">
+        <div className="flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
           {/* Sidebar */}
           {role === "ADMIN" ? (
             <AdminSidebar
@@ -80,27 +83,44 @@ function App() {
 
           <div className="flex-1 h-screen flex flex-col min-w-0 overflow-hidden transition-all duration-300">
             {/* Header / Nav */}
-            <nav className="bg-white border-b border-slate-200 px-3.5 md:px-5 py-2.5 md:py-3 sticky top-0 z-30 shrink-0">
+            <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3.5 md:px-5 py-2.5 md:py-3 sticky top-0 z-30 shrink-0 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   {/* Mobile Menu Hamburger Button */}
                   <button
                     onClick={() => setMobileSidebarOpen(true)}
-                    className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="md:hidden p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     title="Open Menu"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                   </button>
-                  <h1 className="text-sm md:text-base font-bold text-slate-900 truncate">
+                  <h1 className="text-sm md:text-base font-bold text-slate-900 dark:text-white truncate">
                     Surya Bar & Resto POS
                   </h1>
                 </div>
 
                 <div className="flex items-center gap-2.5 md:gap-4">
+                  {/* Midnight Theme Switcher Button */}
+                  <button
+                    onClick={toggleTheme}
+                    className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                    title={isDark ? "Switch to Light Mode" : "Switch to Midnight Dark Mode"}
+                  >
+                    {isDark ? (
+                      <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                      </svg>
+                    )}
+                  </button>
+
                   <div className="text-right">
-                    <p className="text-[11px] md:text-xs font-bold text-slate-800 leading-tight">
+                    <p className="text-[11px] md:text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">
                       {user?.name || (role === "ADMIN" ? "Admin" : "Cashier")}
                     </p>
                     <span className="text-[9px] md:text-[10px] font-semibold text-slate-400 uppercase">
@@ -109,7 +129,7 @@ function App() {
                   </div>
                   <button
                     onClick={logout}
-                    className="px-3 py-1.5 md:px-3.5 md:py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                    className="px-3 py-1.5 md:px-3.5 md:py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
                   >
                     Logout
                   </button>
