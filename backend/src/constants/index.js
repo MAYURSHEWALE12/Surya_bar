@@ -1,0 +1,7 @@
+exports.STOCK_TYPES = ["TP", "NON_TP"]
+exports.ROLES = ["ADMIN", "CASHIER"]
+exports.PAYMENT_METHODS = ["CASH", "UPI", "CARD"]
+exports.RECEIVE_STATUS = ["DRAFT", "PENDING", "RECEIVED", "COMPLETED"]
+exports.BILL_STATUS = ["ACTIVE", "VOIDED"]
+exports.EXPENSE_CATEGORIES = ["Electricity", "Salary", "Transport", "Maintenance", "Rent", "Miscellaneous", "Other"]
+exports.PRINT_SIZES = ["58mm", "80mm"]

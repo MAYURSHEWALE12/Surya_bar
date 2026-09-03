@@ -1,0 +1,2296 @@
+# POS SYSTEM — COMPLETE PRD & IMPLEMENTATION SPECIFICATION
+
+## 1. PROJECT OVERVIEW
+
+Build a modern, responsive **POS + Inventory + Purchase + Vendor + Analytics Management System** for a beer shop / restaurant that sells two types of products:
+
+* **TP (Permit)**
+* **Non-TP (Non-Permit)**
+
+The same product can exist as both TP and Non-TP.
+
+Example:
+
+```text
+Kingfisher Strong 650ml
+    ├── TP
+    │   └── Stock: 100
+    │
+    └── Non-TP
+        └── Stock: 50
+```
+
+TP and Non-TP MUST remain completely separate for:
+
+* Inventory
+* Purchases
+* Sales
+* Returns
+* Stock movements
+* Profit
+* Analytics
+* Reports
+
+They can share the same product master information such as:
+
+* Product name
+* Brand
+* Category
+* Size
+* Barcode
+
+But their inventory and transaction data must remain separate.
+
+---
+
+# 2. TECHNOLOGY STACK
+
+## Frontend
+
+Use:
+
+* React.js
+* Vite
+* Tailwind CSS
+* React Router
+* Zustand
+* Axios
+* React Hook Form
+* Recharts
+* Lucide React
+* TanStack Table
+
+## Backend
+
+Use:
+
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* JWT Authentication
+* bcrypt
+* Zod or Joi for validation
+
+## Architecture
+
+Use a clean:
+
+```text
+Frontend
+    ↓
+REST API
+    ↓
+Controllers
+    ↓
+Services
+    ↓
+Models
+    ↓
+MongoDB
+```
+
+Do NOT put all business logic directly inside controllers.
+
+---
+
+# 3. USER ROLES
+
+There are ONLY TWO ROLES.
+
+## ADMIN
+
+Admin has complete access to the system.
+
+Admin can:
+
+* View dashboard
+* View analytics
+* View reports
+* Use POS
+* Add products
+* Edit products
+* Delete/deactivate products
+* Add categories
+* Edit categories
+* Add brands
+* Edit brands
+* Manage TP/Non-TP pricing
+* Manage inventory
+* Adjust stock
+* Add vendors
+* Edit vendors
+* Delete/deactivate vendors
+* Create purchases
+* Edit purchases
+* Receive purchases
+* Manage vendor payments
+* View vendor ledger
+* View sales
+* Cancel/void bills
+* Process returns
+* Reprint bills
+* Manage users
+* Create cashiers
+* Edit cashiers
+* Disable cashiers
+* Change system settings
+* Configure printers
+* Configure business settings
+* View audit logs
+* Perform day closing
+* Export reports
+
+## CASHIER
+
+Cashier is a restricted POS operator.
+
+Cashier can:
+
+* Login
+* Access POS
+* Search products
+* Scan products
+* Select TP/Non-TP
+* Add products to cart
+* Change quantity
+* Remove products from current cart
+* Apply discounts ONLY if permitted by configured rules
+* Accept payment
+* Complete sale
+* Print receipt
+* Reprint permitted recent receipts
+* Hold bill
+* Resume held bill
+* Process permitted sales returns
+* View their own sales/shift information
+* Perform cashier closing if enabled
+
+Cashier CANNOT:
+
+* Add products
+* Edit products
+* Delete products
+* Change prices
+* Change TP/Non-TP configuration
+* Adjust stock
+* Edit inventory
+* Create or edit vendors
+* Create purchases
+* Edit purchases
+* Receive purchases
+* View vendor financial information
+* Change settings
+* Manage users
+* View audit logs
+* Delete transactions
+* Permanently delete bills
+* Modify historical sales
+* Modify reports
+* Modify analytics
+* Change business information
+
+---
+
+# 4. PERMISSION PRINCIPLE
+
+Never rely only on hiding buttons in React.
+
+Frontend:
+
+```text
+Hide unauthorized UI
+```
+
+AND backend:
+
+```text
+Reject unauthorized API requests
+```
+
+Example:
+
+```text
+Cashier → PUT /api/products/:id
+        ↓
+403 Forbidden
+```
+
+Even if the cashier manually calls the API.
+
+Implement middleware:
+
+```text
+authenticate
+    ↓
+authorize("ADMIN")
+```
+
+---
+
+# 5. AUTHENTICATION
+
+Use JWT authentication.
+
+Login:
+
+```text
+POST /api/auth/login
+```
+
+Response:
+
+```json
+{
+  "token": "...",
+  "user": {
+    "id": "...",
+    "name": "Admin",
+    "role": "ADMIN"
+  }
+}
+```
+
+Store authentication state securely.
+
+Frontend should maintain auth state using Zustand.
+
+Protected routes must check authentication and role.
+
+---
+
+# 6. APPLICATION MODULES
+
+The application should contain:
+
+```text
+Dashboard
+POS
+Products
+Inventory
+Purchases
+Vendors
+Sales
+Analytics
+Reports
+Users
+Settings
+Audit Logs
+```
+
+Cashiers should primarily see:
+
+```text
+POS
+My Sales / Shift
+```
+
+Admin sees everything.
+
+---
+
+# 7. ADMIN SIDEBAR
+
+Admin sidebar:
+
+```text
+Dashboard
+
+POS
+
+Inventory
+  ├── Stock
+  ├── Stock Movement
+  ├── Adjustments
+  └── Low Stock
+
+Products
+  ├── Products
+  ├── Categories
+  └── Brands
+
+Purchases
+  ├── Purchases
+  ├── New Purchase
+  └── Purchase Returns
+
+Vendors
+  ├── Vendors
+  ├── Vendor Ledger
+  └── Vendor Payments
+
+Sales
+  ├── All Sales
+  ├── Returns
+  └── Voided Bills
+
+Analytics
+
+Reports
+
+Users
+
+Audit Logs
+
+Settings
+```
+
+---
+
+# 8. CASHIER SIDEBAR
+
+Cashier should have a minimal interface:
+
+```text
+POS
+
+Held Bills
+
+My Sales
+
+My Shift
+```
+
+Do not show Admin-only modules.
+
+---
+
+# 9. PRODUCT MASTER
+
+Products contain common product information.
+
+Example:
+
+```text
+Product
+-------------------------
+Name
+Brand
+Category
+Subcategory
+Size
+Unit
+Barcode
+SKU
+HSN/SAC if applicable
+Description
+Active
+```
+
+TP and Non-TP are separate stock variants.
+
+Example:
+
+```text
+Kingfisher Strong 650ml
+
+TP
+    Purchase Price: ₹110
+    Selling Price: ₹130
+    Minimum Stock: 20
+
+Non-TP
+    Purchase Price: ₹115
+    Selling Price: ₹140
+    Minimum Stock: 10
+```
+
+---
+
+# 10. TP / NON-TP MODEL
+
+Every transaction involving inventory MUST contain:
+
+```javascript
+stockType: "TP"
+```
+
+or:
+
+```javascript
+stockType: "NON_TP"
+```
+
+Never allow:
+
+```javascript
+stockType: null
+```
+
+for inventory-related transactions.
+
+---
+
+# 11. INVENTORY
+
+Maintain separate inventory records.
+
+Example:
+
+```text
+Product: Kingfisher Strong 650ml
+
+TP
+Current Stock: 100
+
+Non-TP
+Current Stock: 50
+```
+
+Never combine them.
+
+Inventory should maintain:
+
+* Product
+* Stock type
+* Quantity
+* Minimum stock
+* Maximum stock
+* Purchase price
+* Selling price
+* Stock valuation
+
+---
+
+# 12. STOCK LEDGER
+
+Do not rely only on a quantity field.
+
+Maintain a stock movement ledger.
+
+Movement types:
+
+```text
+OPENING_STOCK
+PURCHASE
+SALE
+SALE_RETURN
+PURCHASE_RETURN
+ADJUSTMENT
+DAMAGE
+VOID_REVERSAL
+```
+
+Example:
+
+```text
+Opening Stock       +50
+Purchase            +100
+Sale                 -20
+Sale Return           +2
+Damage                -1
+Adjustment            -2
+-------------------------
+Current Stock        129
+```
+
+Every stock movement must record:
+
+```text
+productId
+stockType
+movementType
+quantity
+previousStock
+newStock
+referenceType
+referenceId
+reason
+createdBy
+createdAt
+```
+
+---
+
+# 13. PURCHASE MODULE
+
+Admin-only.
+
+Admin can create a purchase.
+
+Purchase contains:
+
+```text
+Vendor
+Invoice Number
+Invoice Date
+Purchase Date
+
+Items:
+    Product
+    Stock Type
+    Quantity
+    Purchase Price
+    Discount
+    Tax
+    Amount
+```
+
+Example:
+
+```text
+Vendor: ABC Distributors
+
+Kingfisher 650ml
+TP
+100 units
+₹110
+
+Royal Stag 750ml
+Non-TP
+50 units
+₹420
+```
+
+---
+
+# 14. PURCHASE RECEIVING
+
+Purchase lifecycle:
+
+```text
+DRAFT
+   ↓
+PENDING
+   ↓
+RECEIVED
+   ↓
+COMPLETED
+```
+
+Inventory must increase ONLY when the purchase is received/completed.
+
+When received:
+
+```text
+Purchase
+   ↓
+Purchase Service
+   ↓
+Stock Service
+   ↓
+Stock Movement
+   ↓
+Inventory Updated
+```
+
+Example:
+
+```text
+Before:
+TP Kingfisher = 50
+
+Purchase:
++100
+
+After:
+TP Kingfisher = 150
+```
+
+The update must happen immediately.
+
+Use MongoDB transactions where appropriate to prevent inconsistent inventory.
+
+---
+
+# 15. VENDOR MANAGEMENT
+
+Admin-only.
+
+Vendor fields:
+
+```text
+Name
+Contact Number
+Email
+Address
+GSTIN if applicable
+License Details if applicable
+Payment Terms
+Opening Balance
+Notes
+Status
+```
+
+Vendor features:
+
+* Add vendor
+* Edit vendor
+* Deactivate vendor
+* View purchase history
+* View outstanding amount
+* Record payment
+* Vendor ledger
+
+---
+
+# 16. VENDOR LEDGER
+
+Example:
+
+```text
+Vendor Ledger
+
+Opening Balance       ₹20,000
+
+Purchase              +₹50,000
+Payment               -₹30,000
+Purchase              +₹25,000
+Payment               -₹10,000
+
+Outstanding           ₹55,000
+```
+
+Only Admin can access this.
+
+---
+
+# 17. POS MODULE
+
+POS must be optimized for speed.
+
+Main layout:
+
+```text
+------------------------------------------------
+Search / Scan Barcode
+------------------------------------------------
+
+Categories
+
+[Beer] [Whisky] [Vodka] [Rum] [Wine]
+
+------------------------------------------------
+Products                Current Cart
+------------------------------------------------
+
+Kingfisher              Kingfisher 650ml
+Budweiser               TP × 2       ₹260
+Heineken
+Royal Stag              Royal Stag
+                        Non-TP × 1   ₹450
+
+                        ----------------
+                        Subtotal ₹710
+                        Discount ₹0
+                        Total ₹710
+
+                        [CHECKOUT]
+------------------------------------------------
+```
+
+---
+
+# 18. TP / NON-TP SELECTION IN POS
+
+When a product supports both types:
+
+```text
+Kingfisher Strong 650ml
+
+Choose Stock Type:
+
+[ TP ]
+Stock: 45
+Price: ₹130
+
+[ NON-TP ]
+Stock: 22
+Price: ₹140
+```
+
+The cashier must explicitly select the type.
+
+The POS must show available stock.
+
+Do not allow selling more than available stock unless Admin explicitly enables negative stock.
+
+---
+
+# 19. CART
+
+Cart item:
+
+```text
+productId
+productName
+stockType
+quantity
+unitPrice
+discount
+tax
+total
+```
+
+Example:
+
+```text
+Kingfisher 650ml
+TP
+Qty: 2
+₹130 × 2
+₹260
+```
+
+---
+
+# 20. CHECKOUT
+
+Payment methods:
+
+```text
+CASH
+UPI
+CARD
+OTHER
+```
+
+Also support split payment:
+
+```text
+Cash: ₹500
+UPI: ₹210
+
+Total: ₹710
+```
+
+Before completing the sale:
+
+```text
+Validate stock
+Validate prices
+Validate cart
+Calculate totals
+Create sale
+Create sale items
+Create payment
+Create stock movement
+Update inventory
+Generate invoice
+Print receipt
+```
+
+Use a database transaction where possible.
+
+---
+
+# 21. THERMAL PRINTING
+
+Support:
+
+* 58mm thermal printers
+* 80mm thermal printers
+
+Receipt should contain:
+
+```text
+SHOP NAME
+Address
+Phone
+
+Bill Number
+Date & Time
+Cashier
+
+--------------------------------
+ITEM              QTY      AMT
+--------------------------------
+Kingfisher 650ml
+TP                 2       260
+
+Royal Stag 750ml
+NON-TP             1       450
+--------------------------------
+
+Subtotal                   710
+Discount                     0
+TOTAL                      710
+
+Payment: CASH
+
+Thank You
+```
+
+Receipt printing should be configurable.
+
+Admin can configure:
+
+* Printer size
+* Auto print
+* Header
+* Footer
+* Shop details
+
+---
+
+# 22. SALES
+
+Admin can view all sales.
+
+Cashier can view only permitted sales such as their own shift/day sales.
+
+Sales list:
+
+```text
+Invoice
+Date
+Cashier
+Items
+TP Amount
+Non-TP Amount
+Total
+Payment Method
+Status
+```
+
+Filters:
+
+```text
+Date
+Cashier
+Payment Method
+TP
+Non-TP
+Status
+```
+
+---
+
+# 23. SALE RETURNS
+
+Implement sales returns.
+
+Return must preserve the original stock type.
+
+Example:
+
+Original:
+
+```text
+Kingfisher
+TP
+Qty 2
+```
+
+Return:
+
+```text
+Kingfisher
+TP
+Qty 2
+```
+
+Inventory:
+
+```text
+TP Stock +2
+```
+
+Never accidentally return it to Non-TP stock.
+
+---
+
+# 24. BILL VOID / CANCELLATION
+
+Do NOT physically delete completed bills.
+
+Use:
+
+```text
+ACTIVE
+VOIDED
+```
+
+When an Admin voids a bill:
+
+```text
+Sale
+ ↓
+Void
+ ↓
+Reverse stock movement
+ ↓
+Restore inventory
+ ↓
+Audit log
+```
+
+Example:
+
+```text
+Original sale:
+TP -5
+
+Void:
+TP +5
+```
+
+Cashiers should NOT be able to void completed bills unless explicitly enabled by an Admin-configurable permission.
+
+---
+
+# 25. HOLD BILL
+
+POS should support:
+
+```text
+Current Cart
+    ↓
+Hold
+    ↓
+Held Bill #H102
+```
+
+Cashier can later:
+
+```text
+Held Bills
+H102
+H103
+H104
+
+[Resume]
+```
+
+---
+
+# 26. BARCODE SCANNER
+
+Support USB/Bluetooth barcode scanners.
+
+Flow:
+
+```text
+Scan Barcode
+      ↓
+Find Product
+      ↓
+If TP/Non-TP available
+      ↓
+Select Type
+      ↓
+Add To Cart
+```
+
+The POS should also support product search for products without barcodes.
+
+---
+
+# 27. DASHBOARD
+
+Admin dashboard should show:
+
+```text
+Today's Sales
+Today's TP Sales
+Today's Non-TP Sales
+Today's Purchases
+Gross Profit
+Total Bills
+Average Bill Value
+Total Inventory
+Low Stock
+Out of Stock
+Vendor Outstanding
+```
+
+Example:
+
+```text
+TOTAL SALES       ₹84,520
+
+TP SALES          ₹61,200
+NON-TP SALES      ₹23,320
+
+PURCHASES         ₹42,500
+
+GROSS PROFIT      ₹25,400
+
+BILLS             248
+```
+
+---
+
+# 28. TP ANALYTICS
+
+Create a dedicated TP analytics view.
+
+Show:
+
+* TP sales
+* TP purchases
+* TP profit
+* TP profit margin
+* TP units sold
+* TP stock
+* TP stock value
+* Top TP products
+* Top TP brands
+* Top TP categories
+* Daily TP sales
+* Weekly TP sales
+* Monthly TP sales
+
+Charts:
+
+```text
+Daily TP Sales
+Weekly TP Sales
+Monthly TP Sales
+Top TP Products
+TP Category Performance
+```
+
+---
+
+# 29. NON-TP ANALYTICS
+
+Create a separate Non-TP analytics view.
+
+Show:
+
+* Non-TP sales
+* Non-TP purchases
+* Non-TP profit
+* Non-TP profit margin
+* Non-TP units sold
+* Non-TP stock
+* Non-TP stock value
+* Top Non-TP products
+* Top Non-TP brands
+* Top Non-TP categories
+
+Never mix TP and Non-TP values in these pages.
+
+---
+
+# 30. COMBINED ANALYTICS
+
+Admin should also be able to see combined business performance.
+
+Example:
+
+```text
+Total Sales
+₹26,84,000
+
+TP
+₹18,42,000
+
+Non-TP
+₹8,42,000
+```
+
+Charts can compare:
+
+```text
+TP vs Non-TP Sales
+TP vs Non-TP Purchases
+TP vs Non-TP Profit
+TP vs Non-TP Units Sold
+```
+
+---
+
+# 31. REPORTS
+
+Admin-only.
+
+Reports:
+
+### Sales Reports
+
+```text
+Daily Sales
+Monthly Sales
+Custom Date Sales
+Product Sales
+Brand Sales
+Category Sales
+TP Sales
+Non-TP Sales
+Cashier Sales
+Payment Report
+```
+
+### Inventory Reports
+
+```text
+Current Stock
+TP Stock
+Non-TP Stock
+Stock Movement
+Stock Valuation
+Low Stock
+Out of Stock
+Stock Adjustments
+```
+
+### Purchase Reports
+
+```text
+Purchase Register
+Vendor Purchases
+TP Purchases
+Non-TP Purchases
+Purchase Price History
+```
+
+### Financial Reports
+
+```text
+Revenue
+Cost of Goods
+Gross Profit
+Profit Margin
+Expenses
+Vendor Outstanding
+```
+
+Reports should support:
+
+```text
+Date filters
+TP/Non-TP filters
+Category filters
+Brand filters
+Vendor filters
+Cashier filters
+Export CSV/Excel
+PDF
+```
+
+---
+
+# 32. DAY CLOSING
+
+Admin can review daily closing.
+
+Example:
+
+```text
+DAY CLOSING
+
+Total Bills             248
+
+TP Sales             ₹61,200
+Non-TP Sales          ₹23,320
+
+Cash                  ₹38,000
+UPI                   ₹32,520
+Card                  ₹14,000
+
+Expected Cash         ₹38,000
+Actual Cash           ₹37,800
+
+Difference              -₹200
+```
+
+Cashier can submit their shift closing if enabled.
+
+Admin can approve/review it.
+
+---
+
+# 33. CASH MANAGEMENT
+
+Track:
+
+```text
+Opening Cash
+Cash Sales
+Cash Expenses
+Cash Added
+Cash Withdrawn
+Expected Closing Cash
+Actual Closing Cash
+Difference
+```
+
+---
+
+# 34. EXPENSE MANAGEMENT
+
+Admin-only.
+
+Expense categories:
+
+```text
+Electricity
+Salary
+Transport
+Maintenance
+Rent
+Miscellaneous
+Other
+```
+
+This can be used to calculate:
+
+```text
+Revenue
+- Cost of Goods
+- Expenses
+----------------
+Net Profit
+```
+
+---
+
+# 35. INVENTORY ALERTS
+
+Each TP/Non-TP stock type should have independent thresholds.
+
+Example:
+
+```text
+Kingfisher 650ml
+
+TP:
+Stock: 8
+Minimum: 10
+LOW STOCK
+
+Non-TP:
+Stock: 30
+Minimum: 10
+HEALTHY
+```
+
+Dashboard should show:
+
+```text
+18 Low Stock
+5 Out of Stock
+```
+
+---
+
+# 36. STOCK ADJUSTMENTS
+
+Admin-only.
+
+Example:
+
+```text
+Product:
+Kingfisher 650ml
+
+Type:
+TP
+
+System Stock:
+100
+
+Physical Stock:
+98
+
+Adjustment:
+-2
+
+Reason:
+Damaged
+```
+
+Required fields:
+
+```text
+Product
+Stock Type
+Adjustment Quantity
+Reason
+Notes
+Admin
+Timestamp
+```
+
+Every adjustment must create a stock movement and audit log.
+
+---
+
+# 37. AUDIT LOGS
+
+Admin-only.
+
+Record important actions.
+
+Example:
+
+```text
+Admin
+Changed Product Price
+
+Product:
+Kingfisher 650ml
+Type:
+TP
+
+Old Price:
+₹120
+
+New Price:
+₹130
+
+Date:
+31 Aug 2026
+```
+
+Log:
+
+```text
+User
+Action
+Module
+Entity
+Entity ID
+Old Value
+New Value
+Timestamp
+```
+
+Important actions:
+
+* Price changes
+* Product changes
+* Inventory adjustments
+* Purchase changes
+* Bill void
+* Returns
+* User changes
+* Settings changes
+* Login/logout
+* Permission-related actions
+
+---
+
+# 38. USER MANAGEMENT
+
+Admin-only.
+
+Admin can:
+
+```text
+Create Cashier
+Edit Cashier
+Deactivate Cashier
+Reset Password
+View Login History
+```
+
+User:
+
+```text
+Name
+Username/Email
+Password
+Role
+Status
+Created At
+```
+
+Roles:
+
+```text
+ADMIN
+CASHIER
+```
+
+Do not create unnecessary roles.
+
+---
+
+# 39. SETTINGS
+
+Admin-only.
+
+## Business Settings
+
+```text
+Shop Name
+Logo
+Address
+Phone
+Email
+Tax Information
+Invoice Prefix
+```
+
+## POS Settings
+
+```text
+Receipt Size
+Auto Print
+Default Payment Method
+Negative Stock
+Discount Rules
+```
+
+## Inventory Settings
+
+```text
+Allow Negative Stock
+Low Stock Defaults
+```
+
+## Printer Settings
+
+```text
+58mm
+80mm
+Printer Configuration
+Auto Print
+```
+
+---
+
+# 40. RESPONSIVE DESIGN
+
+The application MUST be responsive.
+
+Support:
+
+```text
+Desktop
+Laptop
+Tablet
+Mobile
+```
+
+Do not simply shrink the desktop interface.
+
+## Desktop
+
+Use sidebar + main content.
+
+## Tablet
+
+Use collapsible sidebar.
+
+## Mobile
+
+Use:
+
+```text
+Top Header
+Main Content
+Bottom Navigation
+```
+
+POS should remain usable on mobile.
+
+Tables should become:
+
+```text
+Cards
+```
+
+or horizontally scrollable where appropriate.
+
+---
+
+# 41. UI DESIGN
+
+Create a modern professional POS interface.
+
+Use Tailwind CSS.
+
+Design principles:
+
+* Clean
+* Minimal
+* Fast
+* Professional
+* High readability
+* Good spacing
+* Consistent typography
+* Clear status badges
+* Responsive
+* Accessible
+
+Use:
+
+* Cards
+* Tables
+* Tabs
+* Modals
+* Drawers
+* Dropdowns
+* Toasts
+* Confirmation dialogs
+* Skeleton loaders
+* Empty states
+
+Avoid excessive gradients and unnecessary animations.
+
+---
+
+# 42. POS KEYBOARD SHORTCUTS
+
+Implement:
+
+```text
+F2 → Search Product
+F4 → Hold Bill
+F6 → Checkout
+F8 → Discount
+F10 → Print
+ESC → Close Modal / Cancel
+ENTER → Confirm
+DELETE → Remove Cart Item
+```
+
+Shortcuts should be configurable later.
+
+---
+
+# 43. DATABASE MODELS
+
+Create at minimum:
+
+```text
+User
+Product
+Category
+Brand
+Inventory
+StockMovement
+Vendor
+VendorPayment
+Purchase
+PurchaseItem
+Sale
+SaleItem
+SaleReturn
+SaleReturnItem
+Payment
+Expense
+AuditLog
+DayClosing
+Settings
+```
+
+---
+
+# 44. PRODUCT MODEL
+
+Conceptually:
+
+```javascript
+{
+  name,
+  brandId,
+  categoryId,
+  size,
+  unit,
+  barcode,
+  sku,
+  description,
+  active,
+
+  tp: {
+    enabled,
+    purchasePrice,
+    sellingPrice,
+    minStock,
+    maxStock
+  },
+
+  nonTp: {
+    enabled,
+    purchasePrice,
+    sellingPrice,
+    minStock,
+    maxStock
+  }
+}
+```
+
+Inventory remains separate:
+
+```javascript
+{
+  productId,
+  stockType: "TP",
+  quantity
+}
+```
+
+or:
+
+```javascript
+{
+  productId,
+  stockType: "NON_TP",
+  quantity
+}
+```
+
+---
+
+# 45. SALE MODEL
+
+Conceptually:
+
+```javascript
+{
+  invoiceNumber,
+  cashierId,
+
+  items: [
+    {
+      productId,
+      productName,
+      stockType,
+      quantity,
+      unitPrice,
+      discount,
+      tax,
+      total
+    }
+  ],
+
+  subtotal,
+  discount,
+  tax,
+  grandTotal,
+
+  payments: [
+    {
+      method,
+      amount
+    }
+  ],
+
+  status,
+  createdAt
+}
+```
+
+---
+
+# 46. PURCHASE MODEL
+
+```javascript
+{
+  vendorId,
+  invoiceNumber,
+  purchaseDate,
+
+  items: [
+    {
+      productId,
+      stockType,
+      quantity,
+      purchasePrice,
+      discount,
+      tax,
+      total
+    }
+  ],
+
+  subtotal,
+  discount,
+  tax,
+  grandTotal,
+
+  status,
+  createdBy,
+  receivedAt
+}
+```
+
+---
+
+# 47. API STRUCTURE
+
+Use REST APIs.
+
+## Auth
+
+```text
+POST /api/auth/login
+GET  /api/auth/me
+POST /api/auth/change-password
+```
+
+## Products
+
+```text
+GET    /api/products
+GET    /api/products/:id
+POST   /api/products
+PUT    /api/products/:id
+DELETE /api/products/:id
+```
+
+## Categories
+
+```text
+GET
+POST
+PUT
+DELETE
+```
+
+## Brands
+
+```text
+GET
+POST
+PUT
+DELETE
+```
+
+## Inventory
+
+```text
+GET /api/inventory
+GET /api/inventory/:productId
+GET /api/inventory/movements
+POST /api/inventory/adjust
+```
+
+## Purchases
+
+```text
+GET
+GET /:id
+POST
+PUT /:id
+POST /:id/receive
+```
+
+## Vendors
+
+```text
+GET
+POST
+PUT
+DELETE
+GET /:id/ledger
+POST /:id/payment
+```
+
+## Sales
+
+```text
+GET
+GET /:id
+POST
+POST /:id/void
+POST /:id/return
+POST /:id/reprint
+```
+
+## Analytics
+
+```text
+GET /api/analytics/dashboard
+GET /api/analytics/tp
+GET /api/analytics/non-tp
+GET /api/analytics/sales
+GET /api/analytics/profit
+GET /api/analytics/inventory
+```
+
+## Reports
+
+```text
+GET /api/reports/sales
+GET /api/reports/purchases
+GET /api/reports/inventory
+GET /api/reports/profit
+```
+
+---
+
+# 48. API SECURITY
+
+Every API endpoint must verify:
+
+```text
+JWT
++
+Role
++
+Permission
+```
+
+Examples:
+
+```text
+GET /api/products
+ADMIN + CASHIER
+
+POST /api/products
+ADMIN only
+
+PUT /api/products/:id
+ADMIN only
+
+POST /api/sales
+ADMIN + CASHIER
+
+POST /api/inventory/adjust
+ADMIN only
+
+POST /api/purchases
+ADMIN only
+
+GET /api/analytics
+ADMIN only
+```
+
+---
+
+# 49. FRONTEND ROUTES
+
+```text
+/login
+
+/admin/dashboard
+/admin/pos
+/admin/products
+/admin/products/:id
+/admin/inventory
+/admin/inventory/movements
+/admin/purchases
+/admin/purchases/new
+/admin/vendors
+/admin/vendors/:id
+/admin/sales
+/admin/analytics
+/admin/reports
+/admin/users
+/admin/audit-logs
+/admin/settings
+
+/cashier/pos
+/cashier/held-bills
+/cashier/my-sales
+/cashier/shift
+```
+
+---
+
+# 50. IMPORTANT BUSINESS RULES
+
+Implement these rules strictly.
+
+### Rule 1
+
+TP and Non-TP stock must never be merged.
+
+### Rule 2
+
+Every inventory transaction must specify stock type.
+
+### Rule 3
+
+Purchase receipt increases inventory immediately.
+
+### Rule 4
+
+Sale decreases the correct TP/Non-TP inventory.
+
+### Rule 5
+
+Sale return increases the original stock type.
+
+### Rule 6
+
+Voided sales reverse the original stock movement.
+
+### Rule 7
+
+Cashiers cannot edit product information.
+
+### Rule 8
+
+Cashiers cannot change prices.
+
+### Rule 9
+
+Cashiers cannot adjust inventory.
+
+### Rule 10
+
+Cashiers cannot create purchases.
+
+### Rule 11
+
+Cashiers cannot access vendor financial information.
+
+### Rule 12
+
+Cashiers cannot modify completed historical transactions.
+
+### Rule 13
+
+Completed transactions must never be physically deleted.
+
+### Rule 14
+
+Every important Admin action must create an audit log.
+
+### Rule 15
+
+Frontend permissions AND backend authorization must be implemented.
+
+### Rule 16
+
+Use database transactions for critical operations such as:
+
+```text
+Sale + Payment + Stock Movement
+Purchase + Stock Movement
+Return + Stock Movement
+Void + Stock Reversal
+```
+
+---
+
+# 51. FOLDER STRUCTURE
+
+## Backend
+
+```text
+backend/
+├── src/
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── validators/
+│   ├── utils/
+│   ├── constants/
+│   └── app.js
+│
+├── server.js
+├── package.json
+└── .env
+```
+
+## Frontend
+
+```text
+frontend/
+├── src/
+│   ├── components/
+│   ├── layouts/
+│   ├── pages/
+│   ├── routes/
+│   ├── services/
+│   ├── store/
+│   ├── hooks/
+│   ├── utils/
+│   ├── constants/
+│   └── App.jsx
+│
+├── main.jsx
+├── package.json
+└── .env
+```
+
+---
+
+# 52. DEVELOPMENT PHASES
+
+Do not try to implement everything in one step.
+
+## PHASE 1
+
+Project setup:
+
+* React
+* Vite
+* Tailwind
+* Express
+* MongoDB
+* Authentication
+* JWT
+* Admin/Cashier roles
+* Protected routes
+
+## PHASE 2
+
+Product management:
+
+* Products
+* Categories
+* Brands
+* TP/Non-TP pricing
+* Product search
+
+## PHASE 3
+
+Inventory:
+
+* TP stock
+* Non-TP stock
+* Stock ledger
+* Stock movements
+* Adjustments
+* Low stock
+
+## PHASE 4
+
+Vendor + Purchase:
+
+* Vendors
+* Purchases
+* Purchase items
+* Purchase receiving
+* Automatic inventory update
+* Vendor ledger
+
+## PHASE 5
+
+POS:
+
+* Product search
+* Barcode
+* TP/Non-TP selection
+* Cart
+* Checkout
+* Payments
+* Hold bills
+* Receipt generation
+
+## PHASE 6
+
+Thermal printing:
+
+* 58mm
+* 80mm
+* Auto print
+* Reprint
+
+## PHASE 7
+
+Sales:
+
+* Sales history
+* Returns
+* Voids
+* Reprints
+
+## PHASE 8
+
+Dashboard + Analytics:
+
+* Dashboard
+* TP analytics
+* Non-TP analytics
+* Combined analytics
+* Profit analytics
+
+## PHASE 9
+
+Reports:
+
+* Sales
+* Inventory
+* Purchases
+* Vendors
+* Profit
+
+## PHASE 10
+
+Admin:
+
+* User management
+* Audit logs
+* Settings
+* Day closing
+* Expenses
+
+## PHASE 11
+
+Testing + Polish:
+
+* Responsive design
+* Permission testing
+* API security
+* Validation
+* Error handling
+* Loading states
+* Empty states
+* Print testing
+* Performance optimization
+
+---
+
+# 53. TESTING REQUIREMENTS
+
+Before considering the system complete, test:
+
+### TP
+
+```text
+Purchase TP
+→ TP stock increases
+
+Sell TP
+→ TP stock decreases
+
+Return TP
+→ TP stock increases
+```
+
+### Non-TP
+
+```text
+Purchase Non-TP
+→ Non-TP stock increases
+
+Sell Non-TP
+→ Non-TP stock decreases
+
+Return Non-TP
+→ Non-TP stock increases
+```
+
+### Separation
+
+Test:
+
+```text
+Purchase TP
+Sell Non-TP
+```
+
+The TP stock MUST NOT decrease.
+
+Also test:
+
+```text
+Purchase Non-TP
+Sell TP
+```
+
+The Non-TP stock MUST NOT decrease.
+
+### Permissions
+
+Test that Cashier cannot:
+
+```text
+Create product
+Edit product
+Change price
+Adjust inventory
+Create purchase
+Edit vendor
+View admin analytics
+Change settings
+Manage users
+Void unauthorized bills
+```
+
+API-level permission tests are mandatory.
+
+---
+
+# 54. ERROR HANDLING
+
+Use proper API responses.
+
+```text
+400 → Validation error
+401 → Unauthorized
+403 → Forbidden
+404 → Not found
+409 → Conflict
+500 → Server error
+```
+
+Frontend should show user-friendly messages.
+
+Never expose stack traces or sensitive backend errors.
+
+---
+
+# 55. PERFORMANCE
+
+POS must feel extremely fast.
+
+Optimize:
+
+* Product search
+* Barcode lookup
+* Cart updates
+* Checkout
+* Inventory updates
+* Dashboard queries
+
+Use indexes for:
+
+```text
+barcode
+sku
+productId
+stockType
+invoiceNumber
+createdAt
+vendorId
+cashierId
+```
+
+Use pagination for large tables.
+
+Do not load thousands of records unnecessarily.
+
+---
+
+# 56. UI REQUIREMENT
+
+The final UI should look like a **professional commercial POS system**, not a basic student CRUD project.
+
+Prioritize:
+
+```text
+Speed
+Clarity
+Consistency
+Responsiveness
+Security
+Accuracy
+```
+
+POS should require minimum clicks.
+
+Admin pages should provide powerful tables, filters, search, sorting, pagination and exports.
+
+---
+
+# 57. FINAL ACCEPTANCE CRITERIA
+
+The project is complete only when:
+
+* Admin can manage the entire business.
+* Cashier can operate POS but cannot modify business data.
+* TP and Non-TP inventory remain completely separate.
+* TP and Non-TP purchases remain separate.
+* TP and Non-TP sales remain separate.
+* Purchase receiving automatically updates inventory.
+* POS sales automatically update inventory.
+* Returns restore stock to the correct type.
+* Voids reverse the correct stock movement.
+* Thermal receipts can be printed.
+* Dashboard works.
+* TP analytics works.
+* Non-TP analytics works.
+* Combined analytics works.
+* Reports work.
+* Vendor ledger works.
+* Stock ledger works.
+* Audit logs work.
+* Role-based access works on frontend AND backend.
+* Application is responsive on desktop, tablet and mobile.
+* No completed transaction is physically deleted.
+* Critical inventory operations are transaction-safe.
+* Application handles validation and errors properly.
+* UI is production-quality and consistent.
