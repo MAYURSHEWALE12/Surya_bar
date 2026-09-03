@@ -81,14 +81,27 @@ class SalesController {
 
             // Insert items and deduct stock
             $items = $data['items'] ?? [];
+            $savedItems = [];
+
             foreach ($items as $item) {
-                $pid = (int)($item['productId'] ?? $item['id']);
+                $pid = (int)($item['productId'] ?? $item['product'] ?? $item['id'] ?? 0);
                 $stockType = $item['stockType'] ?? 'TP';
                 $qty = (int)($item['quantity'] ?? 1);
-                $unitPrice = (float)($item['unitPrice'] ?? 0);
+
+                // Fetch product details if not supplied
+                $stmtProd = $db->prepare("
+                    SELECT p.name, p.size, i.selling_price 
+                    FROM products p 
+                    LEFT JOIN inventories i ON i.product_id = p.id AND i.stock_type = :stype
+                    WHERE p.id = :pid LIMIT 1
+                ");
+                $stmtProd->execute([':pid' => $pid, ':stype' => $stockType]);
+                $prodRow = $stmtProd->fetch();
+
+                $pName = $item['productName'] ?? $item['name'] ?? ($prodRow['name'] ?? 'Liquor Bottle');
+                $size = $item['size'] ?? ($prodRow['size'] ?? '750ml');
+                $unitPrice = (float)($item['unitPrice'] ?? ($prodRow['selling_price'] ?? 0));
                 $total = (float)($item['total'] ?? ($qty * $unitPrice));
-                $pName = $item['productName'] ?? $item['name'] ?? 'Liquor Bottle';
-                $size = $item['size'] ?? '750ml';
 
                 $stmtItem = $db->prepare("
                     INSERT INTO sale_items (sale_id, product_id, stock_type, product_name, size, quantity, unit_price, total)
@@ -108,6 +121,16 @@ class SalesController {
                 // Deduct stock from inventories table
                 $stmtStock = $db->prepare("UPDATE inventories SET quantity = GREATEST(0, quantity - :qty) WHERE product_id = :pid AND stock_type = :stype");
                 $stmtStock->execute([':qty' => $qty, ':pid' => $pid, ':stype' => $stockType]);
+
+                $savedItems[] = [
+                    "productId" => (string)$pid,
+                    "productName" => $pName,
+                    "size" => $size,
+                    "stockType" => $stockType,
+                    "quantity" => $qty,
+                    "unitPrice" => $unitPrice,
+                    "total" => $total
+                ];
             }
 
             // Customer Khata (Credit Borrow Handling)
@@ -148,7 +171,7 @@ class SalesController {
                 "grandTotal" => $grandTotal,
                 "paymentMethod" => $paymentMethod,
                 "status" => "ACTIVE",
-                "items" => $items,
+                "items" => $savedItems,
                 "createdAt" => date("Y-m-d H:i:s")
             ]);
         } catch (Exception $e) {
