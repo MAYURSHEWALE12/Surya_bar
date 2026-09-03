@@ -42,13 +42,14 @@ class SalesController {
             $sale['cashier'] = json_decode($sale['cashier'], true);
 
             // Fetch items
-            $stmtItems = $db->prepare("SELECT product_id as productId, product_name as productName, stock_type as stockType, size, quantity, unit_price as unitPrice, total FROM sale_items WHERE sale_id = :sid");
+            $stmtItems = $db->prepare("SELECT product_id as productId, product_name as productName, stock_type as stockType, size, quantity, unit_price as unitPrice, unit_price as price, total FROM sale_items WHERE sale_id = :sid");
             $stmtItems->execute([':sid' => $sale['_id']]);
             $items = $stmtItems->fetchAll();
             foreach ($items as &$item) {
                 $item['productId'] = (string)$item['productId'];
                 $item['quantity'] = (int)$item['quantity'];
                 $item['unitPrice'] = (float)$item['unitPrice'];
+                $item['price'] = (float)$item['unitPrice'];
                 $item['total'] = (float)$item['total'];
             }
             $sale['items'] = $items;
@@ -162,6 +163,7 @@ class SalesController {
                     "stockType" => $stockType,
                     "quantity" => $qty,
                     "unitPrice" => $unitPrice,
+                    "price" => $unitPrice,
                     "total" => $total
                 ];
             }
