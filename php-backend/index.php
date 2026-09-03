@@ -40,7 +40,7 @@ if ($route === '/api/auth/login' && $method === 'POST') {
     AuthController::login();
     exit;
 }
-if ($route === '/api/auth/me' && $method === 'GET') {
+if (($route === '/api/auth/me' || $route === '/api/auth/profile') && $method === 'GET') {
     $user = authenticate();
     AuthController::me($user);
     exit;
