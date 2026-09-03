@@ -158,6 +158,7 @@ export default function CombinedAnalytics() {
     let nonTpPurchases = 0
     let totalPurchases = 0
     let totalCostOfGoodsSold = 0
+    const prodMap = {}
 
     filteredSales.forEach((sale) => {
       totalSales += sale.grandTotal || 0
