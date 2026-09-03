@@ -2,11 +2,18 @@
 // Surya Bar POS - MySQL Database Configuration
 
 class Database {
-    private $host = "localhost";
-    private $db_name = "surya_bar"; // Change to your cPanel database name (e.g. u123456_suryabar)
-    private $username = "root";      // Change to your cPanel database username
-    private $password = "SYSTEM";    // Change to your cPanel database password
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
     public $conn;
+
+    public function __construct() {
+        $this->host = getenv('DB_HOST') ?: 'localhost';
+        $this->db_name = getenv('DB_NAME') ?: 'surya_bar';
+        $this->username = getenv('DB_USER') ?: 'root';
+        $this->password = getenv('DB_PASS') !== false ? getenv('DB_PASS') : 'SYSTEM';
+    }
 
     public function getConnection() {
         $this->conn = null;
