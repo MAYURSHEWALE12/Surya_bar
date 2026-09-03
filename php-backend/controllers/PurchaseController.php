@@ -8,14 +8,17 @@ class PurchaseController {
         $stmt = $db->query("
             SELECT 
                 p.id as _id,
+                p.purchase_number as invoiceNumber,
                 p.purchase_number as purchaseNumber,
                 p.invoice_date as invoiceDate,
+                p.total_amount as grandTotal,
+                p.total_amount as subtotal,
                 p.total_amount as totalAmount,
                 p.payment_status as paymentStatus,
                 p.payment_method as paymentMethod,
                 p.notes,
                 p.created_at as createdAt,
-                JSON_OBJECT('id', v.id, 'name', v.name) as vendor
+                CASE WHEN v.id IS NOT NULL THEN JSON_OBJECT('id', v.id, 'name', v.name) ELSE NULL END as vendor
             FROM purchases p
             LEFT JOIN vendors v ON p.vendor_id = v.id
             ORDER BY p.id DESC
@@ -24,11 +27,35 @@ class PurchaseController {
         $purchases = $stmt->fetchAll();
         foreach ($purchases as &$p) {
             $p['_id'] = (string)$p['_id'];
-            $p['vendor'] = json_decode($p['vendor'], true);
+            $p['grandTotal'] = (float)$p['grandTotal'];
+            $p['subtotal'] = (float)$p['subtotal'];
+            $p['totalAmount'] = (float)$p['totalAmount'];
+            $p['vendor'] = !empty($p['vendor']) ? json_decode($p['vendor'], true) : null;
 
-            $stmtItems = $db->prepare("SELECT product_id as productId, stock_type as stockType, quantity, purchase_price as purchasePrice, selling_price as sellingPrice, total FROM purchase_items WHERE purchase_id = :pid");
+            $stmtItems = $db->prepare("
+                SELECT 
+                    pi.product_id as productId,
+                    pi.product_id as product,
+                    pi.stock_type as stockType,
+                    pi.quantity,
+                    pi.purchase_price as purchasePrice,
+                    pi.selling_price as sellingPrice,
+                    pi.total,
+                    JSON_OBJECT('id', pr.id, 'name', pr.name, 'size', pr.size) as productObj
+                FROM purchase_items pi
+                LEFT JOIN products pr ON pi.product_id = pr.id
+                WHERE pi.purchase_id = :pid
+            ");
             $stmtItems->execute([':pid' => $p['_id']]);
-            $p['items'] = $stmtItems->fetchAll();
+            $items = $stmtItems->fetchAll();
+            foreach ($items as &$it) {
+                $it['quantity'] = (int)$it['quantity'];
+                $it['purchasePrice'] = (float)$it['purchasePrice'];
+                $it['sellingPrice'] = (float)$it['sellingPrice'];
+                $it['total'] = (float)$it['total'];
+                $it['product'] = !empty($it['productObj']) ? json_decode($it['productObj'], true) : ["name" => "Item"];
+            }
+            $p['items'] = $items;
         }
 
         echo json_encode($purchases);
