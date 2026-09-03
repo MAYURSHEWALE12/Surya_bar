@@ -27,6 +27,7 @@ class InventoryController {
                 i.purchase_price as purchasePrice,
                 i.selling_price as sellingPrice,
                 i.min_stock as minStock,
+                i.min_stock as minimumStock,
                 i.updated_at as updatedAt
             FROM inventories i
             JOIN products p ON i.product_id = p.id
@@ -42,6 +43,8 @@ class InventoryController {
             $inv['productId'] = (string)$inv['productId'];
             $inv['product'] = json_decode($inv['product'], true);
             $inv['quantity'] = (int)$inv['quantity'];
+            $inv['minStock'] = (int)$inv['minStock'];
+            $inv['minimumStock'] = (int)$inv['minStock'];
             $inv['purchasePrice'] = (float)$inv['purchasePrice'];
             $inv['sellingPrice'] = (float)$inv['sellingPrice'];
             $inv['enabled'] = (bool)$inv['enabled'];
