@@ -41,8 +41,22 @@ class SalesController {
             $sale['customer'] = json_decode($sale['customer'], true);
             $sale['cashier'] = json_decode($sale['cashier'], true);
 
-            // Fetch items
-            $stmtItems = $db->prepare("SELECT product_id as productId, product_name as productName, stock_type as stockType, size, quantity, unit_price as unitPrice, unit_price as price, total FROM sale_items WHERE sale_id = :sid");
+            // Fetch items with inventory cost for profit margin
+            $stmtItems = $db->prepare("
+                SELECT 
+                    si.product_id as productId, 
+                    si.product_name as productName, 
+                    si.stock_type as stockType, 
+                    si.size, 
+                    si.quantity, 
+                    si.unit_price as unitPrice, 
+                    si.unit_price as price, 
+                    si.total,
+                    COALESCE(i.purchase_price, 0.00) as purchasePrice
+                FROM sale_items si
+                LEFT JOIN inventories i ON i.product_id = si.product_id AND i.stock_type = si.stock_type
+                WHERE si.sale_id = :sid
+            ");
             $stmtItems->execute([':sid' => $sale['_id']]);
             $items = $stmtItems->fetchAll();
             foreach ($items as &$item) {
@@ -50,6 +64,7 @@ class SalesController {
                 $item['quantity'] = (int)$item['quantity'];
                 $item['unitPrice'] = (float)$item['unitPrice'];
                 $item['price'] = (float)$item['unitPrice'];
+                $item['purchasePrice'] = (float)$item['purchasePrice'];
                 $item['total'] = (float)$item['total'];
             }
             $sale['items'] = $items;

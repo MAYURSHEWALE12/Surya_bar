@@ -179,12 +179,24 @@ export default function NonTPAnalytics() {
       })
     })
 
+    let nonTpCostOfGoodsSold = 0
+    filteredSales.forEach((sale) => {
+      sale.items?.forEach((item) => {
+        if (item.stockType === "NON_TP") {
+          const qty = item.quantity || 0
+          const itemCost = (Number(item.purchasePrice) || (item.unitPrice ? item.unitPrice * 0.72 : 0)) * qty
+          nonTpCostOfGoodsSold += itemCost
+        }
+      })
+    })
+
     let totalPurchases = 0
     filteredPurchases.forEach((purchase) => {
       totalPurchases += purchase.grandTotal || 0
     })
 
-    const grossProfit = nonTpSales - totalPurchases * 0.5
+    const grossProfit = Math.max(0, nonTpSales - nonTpCostOfGoodsSold)
+    const marginPercent = nonTpSales > 0 ? ((grossProfit / nonTpSales) * 100).toFixed(1) : 0
 
     const topArr = Object.values(prodMap)
       .sort((a, b) => b.revenue - a.revenue)
@@ -201,7 +213,8 @@ export default function NonTPAnalytics() {
         tpSales,
         nonTpSales,
         totalPurchases,
-        grossProfit: Math.max(0, grossProfit),
+        grossProfit,
+        marginPercent,
         totalBills: filteredSales.length,
         tpUnitsSold,
         nonTpUnitsSold,

@@ -179,12 +179,24 @@ export default function TPAnalytics() {
       })
     })
 
+    let tpCostOfGoodsSold = 0
+    filteredSales.forEach((sale) => {
+      sale.items?.forEach((item) => {
+        if (item.stockType === "TP") {
+          const qty = item.quantity || 0
+          const itemCost = (Number(item.purchasePrice) || (item.unitPrice ? item.unitPrice * 0.72 : 0)) * qty
+          tpCostOfGoodsSold += itemCost
+        }
+      })
+    })
+
     let totalPurchases = 0
     filteredPurchases.forEach((purchase) => {
       totalPurchases += purchase.grandTotal || 0
     })
 
-    const grossProfit = tpSales - totalPurchases * 0.5
+    const grossProfit = Math.max(0, tpSales - tpCostOfGoodsSold)
+    const marginPercent = tpSales > 0 ? ((grossProfit / tpSales) * 100).toFixed(1) : 0
 
     const topArr = Object.values(prodMap)
       .sort((a, b) => b.revenue - a.revenue)
@@ -201,7 +213,8 @@ export default function TPAnalytics() {
         tpSales,
         nonTpSales,
         totalPurchases,
-        grossProfit: Math.max(0, grossProfit),
+        grossProfit,
+        marginPercent,
         totalBills: filteredSales.length,
         tpUnitsSold,
         nonTpUnitsSold,

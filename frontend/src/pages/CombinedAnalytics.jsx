@@ -157,25 +157,30 @@ export default function CombinedAnalytics() {
     let tpPurchases = 0
     let nonTpPurchases = 0
     let totalPurchases = 0
-    const prodMap = {}
+    let totalCostOfGoodsSold = 0
 
     filteredSales.forEach((sale) => {
       totalSales += sale.grandTotal || 0
 
       sale.items?.forEach((item) => {
+        const qty = item.quantity || 0
+        const itemTot = item.total || 0
+        const itemCost = (Number(item.purchasePrice) || (item.unitPrice ? item.unitPrice * 0.72 : 0)) * qty
+        totalCostOfGoodsSold += itemCost
+
         const pName = item.productName || "Unknown"
         if (!prodMap[pName]) {
           prodMap[pName] = { name: pName, quantity: 0, revenue: 0, stockType: item.stockType }
         }
-        prodMap[pName].quantity += item.quantity || 0
-        prodMap[pName].revenue += item.total || 0
+        prodMap[pName].quantity += qty
+        prodMap[pName].revenue += itemTot
 
         if (item.stockType === "TP") {
-          tpSales += item.total || 0
-          tpUnitsSold += item.quantity || 0
+          tpSales += itemTot
+          tpUnitsSold += qty
         } else if (item.stockType === "NON_TP") {
-          nonTpSales += item.total || 0
-          nonTpUnitsSold += item.quantity || 0
+          nonTpSales += itemTot
+          nonTpUnitsSold += qty
         }
       })
     })
@@ -190,7 +195,9 @@ export default function CombinedAnalytics() {
       }
     })
 
-    const grossProfit = totalSales - totalPurchases
+    // Accurate Gross Profit = Sales Revenue - Cost of Sold Units
+    const grossProfit = Math.max(0, totalSales - totalCostOfGoodsSold)
+    const marginPercent = totalSales > 0 ? ((grossProfit / totalSales) * 100).toFixed(1) : 0
 
     const topArr = Object.values(prodMap)
       .sort((a, b) => b.revenue - a.revenue)
@@ -214,7 +221,8 @@ export default function CombinedAnalytics() {
         totalPurchases,
         tpPurchases,
         nonTpPurchases,
-        grossProfit: Math.max(0, grossProfit),
+        grossProfit,
+        marginPercent,
         totalBills: filteredSales.length,
         tpUnitsSold,
         nonTpUnitsSold,
@@ -375,8 +383,8 @@ export default function CombinedAnalytics() {
           <p className="text-xl sm:text-2xl md:text-3xl font-black text-emerald-700 mt-1 sm:mt-1.5 tracking-tight">
             ₹{dashboard.grossProfit.toLocaleString()}
           </p>
-          <p className="text-xs font-bold text-slate-600 mt-1 sm:mt-2">
-            Revenue - Inward Spend
+          <p className="text-xs font-bold text-emerald-700 mt-1 sm:mt-2">
+            {dashboard.marginPercent}% margin on sold stock
           </p>
         </div>
 
