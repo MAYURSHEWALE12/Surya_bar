@@ -56,6 +56,21 @@ if ($route === '/api/products') {
     exit;
 }
 
+if (preg_match('#^/api/products/(\d+)$#', $route, $matches)) {
+    $productId = (int)$matches[1];
+    if ($method === 'GET') {
+        $user = authenticate();
+        ProductController::getById($productId);
+    } elseif ($method === 'PUT') {
+        $user = authenticate(['ADMIN']);
+        ProductController::update($productId);
+    } elseif ($method === 'DELETE') {
+        $user = authenticate(['ADMIN']);
+        ProductController::delete($productId);
+    }
+    exit;
+}
+
 // 3. Categories & Brands
 if ($route === '/api/categories') {
     if ($method === 'POST') {
