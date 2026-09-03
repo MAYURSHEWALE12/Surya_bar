@@ -5,7 +5,7 @@ class Database {
     private $host = "localhost";
     private $db_name = "surya_bar"; // Change to your cPanel database name (e.g. u123456_suryabar)
     private $username = "root";      // Change to your cPanel database username
-    private $password = "";          // Change to your cPanel database password
+    private $password = "SYSTEM";    // Change to your cPanel database password
     public $conn;
 
     public function getConnection() {

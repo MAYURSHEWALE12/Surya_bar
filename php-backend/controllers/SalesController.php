@@ -136,10 +136,20 @@ class SalesController {
             $db->commit();
             http_response_code(201);
             echo json_encode([
-                "message" => "Sale completed successfully",
-                "invoiceNumber" => $invoiceNum,
+                "_id" => (string)$saleId,
                 "id" => (string)$saleId,
-                "grandTotal" => $grandTotal
+                "invoiceNumber" => $invoiceNum,
+                "subtotal" => $subtotal,
+                "discount" => $discountAmount,
+                "discountType" => $discountType,
+                "discountValue" => $discountVal,
+                "discountAmount" => $discountAmount,
+                "tax" => 0,
+                "grandTotal" => $grandTotal,
+                "paymentMethod" => $paymentMethod,
+                "status" => "ACTIVE",
+                "items" => $items,
+                "createdAt" => date("Y-m-d H:i:s")
             ]);
         } catch (Exception $e) {
             $db->rollBack();
