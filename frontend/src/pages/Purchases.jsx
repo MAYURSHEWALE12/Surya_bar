@@ -148,7 +148,7 @@ export default function Purchases() {
     try {
       const token = localStorage.getItem("surya_bar_token")
       const subtotal = calculateSubtotal()
-      const tax = subtotal * 0.18
+      const tax = subtotal * 0.10 // 10% Liquor VAT (Government excise/commercial norm)
       const grandTotal = subtotal + tax
 
       const payload = {
@@ -524,9 +524,9 @@ export default function Purchases() {
               <div className="flex justify-end p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
                 <div className="text-right space-y-1 text-xs">
                   <div className="text-slate-600">Subtotal: <span className="font-bold text-slate-900">₹{calculateSubtotal().toLocaleString()}</span></div>
-                  <div className="text-slate-600">Est. GST (18%): <span className="font-bold text-slate-900">₹{(calculateSubtotal() * 0.18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+                  <div className="text-slate-600">Liquor VAT (10%): <span className="font-bold text-slate-900">₹{(calculateSubtotal() * 0.10).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
                   <div className="text-sm sm:text-base font-black text-slate-900 pt-1 border-t border-slate-200">
-                    Grand Total: ₹{(calculateSubtotal() * 1.18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    Grand Total: ₹{(calculateSubtotal() * 1.10).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
               </div>
