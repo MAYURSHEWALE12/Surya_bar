@@ -201,6 +201,144 @@ export default function Purchases() {
     }
   }
 
+  const handlePrintPurchaseInvoice = (pur) => {
+    const printWindow = window.open("", "_blank", "width=800,height=900")
+    if (!printWindow) {
+      alert("Please allow popups to print invoices")
+      return
+    }
+
+    const items = pur.items || []
+    const subtotal = items.reduce((sum, item) => sum + (Number(item.total) || (Number(item.quantity) * Number(item.purchasePrice || 0))), 0)
+    const vat = subtotal * 0.10
+    const grandTotal = pur.grandTotal || (subtotal + vat)
+    const dateStr = new Date(pur.createdAt || Date.now()).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+    const vendorName = pur.vendor?.name || pur.vendorName || "Direct / Open Market"
+    const vendorGstin = pur.vendor?.gstin || "N/A"
+    const vendorPhone = pur.vendor?.phone || "N/A"
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Purchase Tax Invoice - ${pur.invoiceNumber}</title>
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 30px; color: #0f172a; background: #fff; font-size: 13px; }
+            .invoice-box { max-width: 750px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 16px; margin-bottom: 20px; }
+            .title { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: #0f172a; }
+            .badge { display: inline-block; padding: 3px 8px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 4px; }
+            .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+            .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; }
+            .card h4 { font-size: 11px; text-transform: uppercase; font-weight: 800; color: #64748b; margin-bottom: 6px; letter-spacing: 0.5px; }
+            .card p { font-size: 13px; font-weight: 600; color: #1e293b; line-height: 1.4; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th { background: #0f172a; color: #fff; font-weight: 800; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; padding: 10px 12px; text-align: left; }
+            td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: 12px; color: #334155; }
+            tr:last-child td { border-bottom: 2px solid #e2e8f0; }
+            .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; background: #e0e7ff; color: #3730a3; }
+            .tag-non-tp { background: #f3e8ff; color: #6b21a8; }
+            .totals-container { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+            .totals-table { width: 320px; }
+            .totals-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; color: #475569; }
+            .totals-row.grand { border-top: 2px solid #0f172a; border-bottom: 2px solid #0f172a; padding: 10px 0; font-size: 16px; font-weight: 900; color: #0f172a; margin-top: 6px; }
+            .footer { border-top: 1px dashed #cbd5e1; padding-top: 15px; text-align: center; font-size: 11px; color: #64748b; }
+            @media print {
+              body { padding: 0; background: #fff; }
+              .invoice-box { border: none; box-shadow: none; padding: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-box">
+            <div class="header">
+              <div>
+                <div class="title">SURYA BAR & RESTAURANT</div>
+                <div style="color: #64748b; font-size: 12px; margin-top: 2px;">Inward Goods Procurement & Restock Receipt</div>
+                <div class="badge">Inward Stock Voucher</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 15px; font-weight: 900; font-family: monospace; color: #0f172a;">#${pur.invoiceNumber}</div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Date: ${dateStr}</div>
+                <div style="font-size: 11px; font-weight: 700; color: #059669; margin-top: 2px;">Status: ${pur.status || "RECEIVED"}</div>
+              </div>
+            </div>
+
+            <div class="meta-grid">
+              <div class="card">
+                <h4>Vendor / Distributor Details</h4>
+                <p><strong>${vendorName}</strong></p>
+                <p style="font-size: 11px; color: #64748b; margin-top: 2px;">GSTIN: ${vendorGstin} | Ph: ${vendorPhone}</p>
+                <p style="font-size: 11px; color: #64748b;">Payment Mode: <strong style="color: #0f172a; text-transform: uppercase;">${pur.paymentMethod || "CASH"}</strong></p>
+              </div>
+              <div class="card">
+                <h4>Consignee / Destination</h4>
+                <p><strong>SURYA BAR & RESTAURANT</strong></p>
+                <p style="font-size: 11px; color: #64748b; margin-top: 2px;">Main Bar & Resto Parlour Cellar</p>
+                <p style="font-size: 11px; color: #64748b;">Excise Channel: <strong style="color: #0f172a;">TP & Commercial Trade</strong></p>
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 40px; text-align: center;">#</th>
+                  <th>Item / Bottle Description</th>
+                  <th style="text-align: center;">Channel</th>
+                  <th style="text-align: right;">Qty</th>
+                  <th style="text-align: right;">Cost / Bottle</th>
+                  <th style="text-align: right;">Total Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${items.map((it, i) => `
+                  <tr>
+                    <td style="text-align: center; color: #94a3b8; font-weight: 700;">${i + 1}</td>
+                    <td>
+                      <strong style="color: #0f172a;">${it.product?.name || it.productName || "Liquor Item"}</strong>
+                      <div style="font-size: 10px; color: #64748b;">${it.size || it.product?.size || "750ml"}</div>
+                    </td>
+                    <td style="text-align: center;">
+                      <span class="tag ${it.stockType === "NON_TP" ? "tag-non-tp" : ""}">${it.stockType}</span>
+                    </td>
+                    <td style="text-align: right; font-weight: 800; color: #0f172a;">${it.quantity}</td>
+                    <td style="text-align: right; font-weight: 600;">₹${Number(it.purchasePrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style="text-align: right; font-weight: 800; color: #0f172a;">₹${(Number(it.total) || (Number(it.quantity) * Number(it.purchasePrice || 0))).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+
+            <div class="totals-container">
+              <div class="totals-table">
+                <div class="totals-row">
+                  <span>Inward Subtotal:</span>
+                  <span style="font-weight: 700; color: #0f172a;">₹${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                <div class="totals-row">
+                  <span>Liquor VAT (10%):</span>
+                  <span style="font-weight: 700; color: #0f172a;">₹${vat.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                <div class="totals-row grand">
+                  <span>Grand Total:</span>
+                  <span>₹${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="footer">
+              <p>Generated by Surya Bar & Resto ERP • Authorized Inward Stock Document</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+    printWindow.print()
+  }
+
   const [searchTerm, setSearchTerm] = useState("")
 
   const totalPurchaseSpend = purchases.reduce((sum, p) => sum + (Number(p.grandTotal) || Number(p.subtotal) || 0), 0)
@@ -616,6 +754,15 @@ export default function Purchases() {
                     </div>
                   ))}
                 </div>
+                
+                <button
+                  type="button"
+                  onClick={() => handlePrintPurchaseInvoice(pur)}
+                  className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>🖨️</span>
+                  <span>Print Tax Invoice</span>
+                </button>
               </div>
             ))
           )}
@@ -633,18 +780,19 @@ export default function Purchases() {
                 <th className="p-3.5 text-center">Payment</th>
                 <th className="p-3.5 text-center">Status</th>
                 <th className="p-3.5 text-right">Grand Total</th>
+                <th className="p-3.5 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="p-8 text-center text-slate-400">
+                  <td colSpan="8" className="p-8 text-center text-slate-400">
                     Loading purchase records...
                   </td>
                 </tr>
               ) : filteredPurchases.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="p-8 text-center text-slate-400">
+                  <td colSpan="8" className="p-8 text-center text-slate-400">
                     No purchase entries recorded yet. Click "+ Record Inward Stock" to inward your first shipment.
                   </td>
                 </tr>
@@ -683,6 +831,17 @@ export default function Purchases() {
                     </td>
                     <td className="p-3.5 text-right font-black text-slate-900">
                       ₹{pur.grandTotal ? Number(pur.grandTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(pur.subtotal) || 0).toLocaleString()}
+                    </td>
+                    <td className="p-3.5 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handlePrintPurchaseInvoice(pur)}
+                        className="px-3 py-1.5 bg-slate-900 hover:bg-black text-white font-bold rounded-lg text-xs transition-all shadow-xs flex items-center gap-1.5 ml-auto cursor-pointer"
+                        title="Print Inward Tax Invoice"
+                      >
+                        <span>🖨️</span>
+                        <span>Invoice</span>
+                      </button>
                     </td>
                   </tr>
                 ))
