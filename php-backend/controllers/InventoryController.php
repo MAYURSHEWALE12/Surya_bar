@@ -58,19 +58,51 @@ class InventoryController {
 
         $productId = (int)($data['productId'] ?? 0);
         $stockType = $data['stockType'] ?? 'TP';
-        $newQuantity = (int)($data['quantity'] ?? 0);
         $reason = $data['reason'] ?? 'Manual Adjustment';
 
-        $stmt = $db->prepare("UPDATE inventories SET quantity = :qty WHERE product_id = :pid AND stock_type = :stype");
-        $stmt->execute([':qty' => $newQuantity, ':pid' => $productId, ':stype' => $stockType]);
+        if (!$productId) {
+            http_response_code(400);
+            echo json_encode(["message" => "Product ID is required"]);
+            return;
+        }
+
+        // Fetch current quantity
+        $stmtCur = $db->prepare("SELECT quantity FROM inventories WHERE product_id = :pid AND stock_type = :stype");
+        $stmtCur->execute([':pid' => $productId, ':stype' => $stockType]);
+        $curQty = (int)($stmtCur->fetchColumn() ?: 0);
+
+        if (isset($data['newQuantity']) && is_numeric($data['newQuantity'])) {
+            $finalQty = max(0, (int)$data['newQuantity']);
+        } elseif (isset($data['adjustmentQuantity']) && is_numeric($data['adjustmentQuantity'])) {
+            $finalQty = max(0, $curQty + (int)$data['adjustmentQuantity']);
+        } elseif (isset($data['quantity']) && is_numeric($data['quantity'])) {
+            $finalQty = max(0, (int)$data['quantity']);
+        } else {
+            http_response_code(400);
+            echo json_encode(["message" => "Please provide newQuantity, adjustmentQuantity, or quantity"]);
+            return;
+        }
+
+        $stmt = $db->prepare("
+            INSERT INTO inventories (product_id, stock_type, quantity, min_stock, enabled)
+            VALUES (:pid, :stype, :qty, 5, 1)
+            ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)
+        ");
+        $stmt->execute([':qty' => $finalQty, ':pid' => $productId, ':stype' => $stockType]);
 
         // Log audit
         $stmtAudit = $db->prepare("INSERT INTO audit_logs (user_id, action, entity, details) VALUES (:uid, 'INVENTORY_ADJUST', 'Inventory', :details)");
         $stmtAudit->execute([
             ':uid' => $currentUser['id'] ?? 1,
-            ':details' => "Product ID: $productId ($stockType) adjusted to $newQuantity qty. Reason: $reason"
+            ':details' => "Product ID: $productId ($stockType) adjusted from $curQty to $finalQty. Reason: $reason"
         ]);
 
-        echo json_encode(["message" => "Stock adjusted successfully"]);
+        echo json_encode([
+            "message" => "Stock adjusted successfully",
+            "productId" => (string)$productId,
+            "stockType" => $stockType,
+            "previousQuantity" => $curQty,
+            "newQuantity" => $finalQty
+        ]);
     }
 }

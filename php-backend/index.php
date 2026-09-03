@@ -92,7 +92,7 @@ if ($route === '/api/brands') {
 }
 
 // 4. Inventories & Stock
-if ($route === '/api/inventory') {
+if ($route === '/api/inventory' || $route === '/api/inventory/adjust') {
     if ($method === 'GET') {
         InventoryController::getAll();
     } elseif ($method === 'POST') {
