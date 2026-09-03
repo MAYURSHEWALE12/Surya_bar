@@ -1,0 +1,62 @@
+<?php
+require_once __DIR__ . "/../config/database.php";
+
+class InventoryController {
+    public static function getAll() {
+        $db = (new Database())->getConnection();
+
+        $stmt = $db->query("
+            SELECT 
+                i.id as _id,
+                i.product_id as productId,
+                p.name as productName,
+                p.size,
+                p.unit,
+                c.name as categoryName,
+                b.name as brandName,
+                i.stock_type as stockType,
+                i.enabled,
+                i.quantity,
+                i.purchase_price as purchasePrice,
+                i.selling_price as sellingPrice,
+                i.min_stock as minStock,
+                i.updated_at as updatedAt
+            FROM inventories i
+            JOIN products p ON i.product_id = p.id
+            LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN brands b ON p.brand_id = b.id
+            WHERE p.active = 1
+            ORDER BY p.name ASC, i.stock_type ASC
+        ");
+
+        $invs = $stmt->fetchAll();
+        foreach ($invs as &$inv) {
+            $inv['_id'] = (string)$inv['_id'];
+            $inv['productId'] = (string)$inv['productId'];
+            $inv['enabled'] = (bool)$inv['enabled'];
+        }
+        echo json_encode($invs);
+    }
+
+    public static function adjust($currentUser) {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $db = (new Database())->getConnection();
+
+        $productId = (int)($data['productId'] ?? 0);
+        $stockType = $data['stockType'] ?? 'TP';
+        $newQuantity = (int)($data['quantity'] ?? 0);
+        $reason = $data['reason'] ?? 'Manual Adjustment';
+
+        $stmt = $db->prepare("UPDATE inventories SET quantity = :qty WHERE product_id = :pid AND stock_type = :stype");
+        $stmt->execute([':qty' => $newQuantity, ':pid' => $productId, ':stype' => $stockType]);
+
+        // Log audit
+        $stmtAudit = $db->prepare("INSERT INTO audit_logs (user_id, action, entity, details) VALUES (:uid, 'INVENTORY_ADJUST', 'Inventory', :details)");
+        $stmtAudit->execute([
+            ':uid' => $currentUser['id'] ?? 1,
+            ':details' => "Product ID: $productId ($stockType) adjusted to $newQuantity qty. Reason: $reason"
+        ]);
+
+        echo json_encode(["message" => "Stock adjusted successfully"]);
+    }
+}
