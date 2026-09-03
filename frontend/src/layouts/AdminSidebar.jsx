@@ -50,16 +50,16 @@ export default function AdminSidebar({
       )}
 
       <aside
-        className={`bg-white border-r border-slate-200 h-screen flex flex-col justify-between transition-all duration-300 z-50 no-scrollbar ${
+        className={`bg-white border-r border-slate-200 h-screen max-h-[100dvh] flex flex-col justify-between transition-all duration-300 z-50 overflow-hidden ${
           /* Mobile Sheet vs Desktop Sidebar */
-          `fixed inset-y-0 left-0 w-[270px] max-w-[85vw] rounded-r-3xl md:rounded-none p-4 ${
+          `fixed inset-y-0 left-0 w-[280px] max-w-[85vw] rounded-r-3xl md:rounded-none p-4 ${
             isMobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
           } md:translate-x-0 md:static md:sticky top-0 md:shadow-none`
         } ${isSlim ? "md:w-20 md:p-3" : "md:w-60 md:p-4"}`}
       >
-        <div className="space-y-4 overflow-y-auto overflow-x-hidden no-scrollbar">
+        <div className="flex-1 space-y-4 overflow-y-auto overflow-x-hidden touch-scroll no-scrollbar min-h-0 pr-1 pb-4">
           {/* Brand Header */}
-          <div className="flex items-center justify-between px-1 pb-1 border-b border-slate-100 md:border-b-0">
+          <div className="flex items-center justify-between px-1 pb-1 border-b border-slate-100 md:border-b-0 sticky top-0 bg-white z-10">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shadow-sm shrink-0">
                 SB

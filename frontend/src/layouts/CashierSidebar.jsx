@@ -18,13 +18,13 @@ export default function CashierSidebar({ isMobileOpen, onCloseMobile }) {
       )}
 
       <aside
-        className={`bg-white border-r border-slate-200 h-screen flex flex-col justify-between transition-all duration-300 z-50 no-scrollbar ${
+        className={`bg-white border-r border-slate-200 h-screen max-h-[100dvh] flex flex-col justify-between transition-all duration-300 z-50 overflow-hidden ${
           `fixed inset-y-0 left-0 ${
             isMobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
           } md:translate-x-0 md:static md:sticky top-0`
         } w-64 p-4`}
       >
-        <div className="space-y-6">
+        <div className="flex-1 space-y-6 overflow-y-auto overflow-x-hidden touch-scroll no-scrollbar min-h-0 pb-4">
           <div className="flex items-center justify-between px-1 py-1">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-sm shadow-sm shrink-0">
