@@ -16,8 +16,8 @@ class ProductController {
                 p.description,
                 p.active,
                 p.created_at as createdAt,
-                JSON_OBJECT('id', c.id, 'name', c.name) as category,
-                JSON_OBJECT('id', b.id, 'name', b.name) as brand,
+                CASE WHEN c.id IS NOT NULL THEN JSON_OBJECT('id', c.id, 'name', c.name) ELSE NULL END as category,
+                CASE WHEN b.id IS NOT NULL THEN JSON_OBJECT('id', b.id, 'name', b.name) ELSE NULL END as brand,
                 (
                     SELECT JSON_OBJECT(
                         'enabled', i_tp.enabled = 1,
@@ -49,10 +49,28 @@ class ProductController {
         // Format JSON fields cleanly for React
         foreach ($products as &$prod) {
             $prod['_id'] = (string)$prod['_id'];
-            $prod['category'] = json_decode($prod['category'], true);
-            $prod['brand'] = json_decode($prod['brand'], true);
-            $prod['tp'] = json_decode($prod['tp'], true) ?: ["enabled" => false, "quantity" => 0, "purchasePrice" => 0, "sellingPrice" => 0, "minStock" => 5];
-            $prod['nonTp'] = json_decode($prod['nonTp'], true) ?: ["enabled" => false, "quantity" => 0, "purchasePrice" => 0, "sellingPrice" => 0, "minStock" => 5];
+            $prod['category'] = !empty($prod['category']) ? json_decode($prod['category'], true) : null;
+            $prod['brand'] = !empty($prod['brand']) ? json_decode($prod['brand'], true) : null;
+            
+            $tp = !empty($prod['tp']) ? json_decode($prod['tp'], true) : null;
+            if ($tp) {
+                $tp['quantity'] = (int)($tp['quantity'] ?? 0);
+                $tp['purchasePrice'] = (float)($tp['purchasePrice'] ?? 0);
+                $tp['sellingPrice'] = (float)($tp['sellingPrice'] ?? 0);
+                $tp['minStock'] = (int)($tp['minStock'] ?? 5);
+                $tp['enabled'] = !empty($tp['enabled']);
+            }
+            $prod['tp'] = $tp ?: ["enabled" => false, "quantity" => 0, "purchasePrice" => 0, "sellingPrice" => 0, "minStock" => 5];
+
+            $ntp = !empty($prod['nonTp']) ? json_decode($prod['nonTp'], true) : null;
+            if ($ntp) {
+                $ntp['quantity'] = (int)($ntp['quantity'] ?? 0);
+                $ntp['purchasePrice'] = (float)($ntp['purchasePrice'] ?? 0);
+                $ntp['sellingPrice'] = (float)($ntp['sellingPrice'] ?? 0);
+                $ntp['minStock'] = (int)($ntp['minStock'] ?? 5);
+                $ntp['enabled'] = !empty($ntp['enabled']);
+            }
+            $prod['nonTp'] = $ntp ?: ["enabled" => false, "quantity" => 0, "purchasePrice" => 0, "sellingPrice" => 0, "minStock" => 5];
         }
 
         echo json_encode($products);
@@ -106,6 +124,16 @@ class ProductController {
                     ':ms' => (int)($ntp['minStock'] ?? 5),
                 ]);
             }
+
+            $db->commit();
+            http_response_code(201);
+            echo json_encode(["message" => "Product created successfully", "id" => (string)$productId]);
+        } catch (Exception $e) {
+            $db->rollBack();
+            http_response_code(500);
+            echo json_encode(["message" => "Failed to create product: " . $e->getMessage()]);
+        }
+    }
 
     public static function getById($id) {
         $db = (new Database())->getConnection();
