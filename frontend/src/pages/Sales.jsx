@@ -183,14 +183,10 @@ export default function Sales() {
         <div class="divider"></div>
 
         <div class="totals-row">
-          <span>TP Total:</span>
-          <span>₹${tpSubtotal.toFixed(2)}</span>
+          <span>Subtotal:</span>
+          <span>₹${(sale.subtotal || (tpSubtotal + nonTpSubtotal) || sale.grandTotal || 0).toFixed(2)}</span>
         </div>
-        <div class="totals-row">
-          <span>Non-TP Total:</span>
-          <span>₹${nonTpSubtotal.toFixed(2)}</span>
-        </div>
-        ${sale.tax ? `<div class="totals-row"><span>Tax:</span><span>₹${sale.tax.toFixed(2)}</span></div>` : ""}
+        ${sale.tax ? `<div class="totals-row"><span>Tax (GST):</span><span>₹${sale.tax.toFixed(2)}</span></div>` : ""}
         ${sale.discount ? `<div class="totals-row"><span>Discount:</span><span>-₹${sale.discount.toFixed(2)}</span></div>` : ""}
 
         <div class="totals-row grand-total">
