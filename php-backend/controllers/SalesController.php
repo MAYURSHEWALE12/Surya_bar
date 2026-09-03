@@ -69,8 +69,8 @@ class SalesController {
             $subtotal = (float)($data['subtotal'] ?? 0);
             $discountType = $data['discountType'] ?? 'PERCENT';
             $discountVal = (float)($data['discountValue'] ?? 0);
-            $discountAmount = (float)($data['discountAmount'] ?? 0);
-            $grandTotal = (float)($data['grandTotal'] ?? 0);
+            $discountAmount = (float)($data['discountAmount'] ?? $data['discount'] ?? 0);
+            $grandTotal = (float)($data['grandTotal'] ?? ($subtotal - $discountAmount));
             $paymentMethod = $data['paymentMethod'] ?? 'CASH';
             $customerId = !empty($data['customerId']) ? (int)$data['customerId'] : null;
             $customerName = trim($data['customerName'] ?? '');
