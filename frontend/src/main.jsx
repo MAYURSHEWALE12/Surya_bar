@@ -47,7 +47,7 @@ function App() {
 
     // Warm up Render backend immediately on page open & keep alive every 10 min while app is open
     const warmUpBackend = () => {
-      fetch(`${API_BASE_URL}/health`).catch(() => {})
+      fetch(`${API_BASE_URL}/api/health`).catch(() => {})
     }
     warmUpBackend()
     const interval = setInterval(warmUpBackend, 10 * 60 * 1000)

@@ -10,25 +10,16 @@ const app = express()
 connectDB()
 
 // Middleware
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"]
-
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, server-to-server) or matching origins
-      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes("*") || origin.endsWith(".vercel.app")) {
-        callback(null, true)
-      } else {
-        callback(null, true) // Open for cloud deployment flexibility
-      }
-    },
+    origin: true, // Echoes the request origin header for all domains (Vercel, custom domains, localhost)
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    exposedHeaders: ["Content-Disposition"],
   })
 )
+app.options("*", cors()) // Handle all preflight requests explicitly
 app.use(express.json({ limit: "50mb" })) // Support large backup uploads
 
 // Routes
@@ -58,6 +49,10 @@ app.get("/", (req, res) => {
 
 app.get("/health", (req, res) => {
   res.status(200).send("OK")
+})
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "OK", serverTime: new Date().toISOString() })
 })
 
 // Error handling
