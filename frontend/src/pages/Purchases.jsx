@@ -148,8 +148,7 @@ export default function Purchases() {
     try {
       const token = localStorage.getItem("surya_bar_token")
       const subtotal = calculateSubtotal()
-      const tax = subtotal * 0.10 // 10% Liquor VAT (Government excise/commercial norm)
-      const grandTotal = subtotal + tax
+      const grandTotal = subtotal // Inclusive of all taxes & costs
 
       const payload = {
         vendor: formData.vendor || null,
@@ -159,7 +158,7 @@ export default function Purchases() {
         notes: formData.notes,
         directReceive: true,
         subtotal,
-        tax,
+        tax: 0,
         grandTotal,
         items: formData.items.map((i) => ({
           product: i.product,
@@ -313,16 +312,8 @@ export default function Purchases() {
 
             <div class="totals-container">
               <div class="totals-table">
-                <div class="totals-row">
-                  <span>Inward Subtotal:</span>
-                  <span style="font-weight: 700; color: #0f172a;">₹${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
-                <div class="totals-row">
-                  <span>Liquor VAT (10%):</span>
-                  <span style="font-weight: 700; color: #0f172a;">₹${vat.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
                 <div class="totals-row grand">
-                  <span>Grand Total:</span>
+                  <span>Grand Total (All Taxes Incl.):</span>
                   <span>₹${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
@@ -659,12 +650,11 @@ export default function Purchases() {
               </div>
 
               {/* Total Calculation Card */}
-              <div className="flex justify-end p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+              <div className="flex justify-end p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <div className="text-right space-y-1 text-xs">
-                  <div className="text-slate-600">Subtotal: <span className="font-bold text-slate-900">₹{calculateSubtotal().toLocaleString()}</span></div>
-                  <div className="text-slate-600">Liquor VAT (10%): <span className="font-bold text-slate-900">₹{(calculateSubtotal() * 0.10).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
-                  <div className="text-sm sm:text-base font-black text-slate-900 pt-1 border-t border-slate-200">
-                    Grand Total: ₹{(calculateSubtotal() * 1.10).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <div className="text-slate-500 dark:text-slate-400 font-medium">All Prices Inclusive of Taxes</div>
+                  <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white pt-1">
+                    Total Inward Bill: ₹{calculateSubtotal().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
               </div>
