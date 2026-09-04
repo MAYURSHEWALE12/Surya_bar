@@ -80,10 +80,13 @@ export default function Sales() {
         setActiveModalSale(null)
         await fetchSalesData()
       } else {
-        alert(data.message || "Failed to void sale")
+        showToast(data.message || "Failed to void sale")
+        setVoidConfirmSale(null)
+        await fetchSalesData()
       }
     } catch (err) {
-      alert("Error voiding sale: " + err.message)
+      showToast("Error voiding sale: " + err.message)
+      setVoidConfirmSale(null)
     } finally {
       setVoidingId(null)
     }
