@@ -216,35 +216,32 @@ export default function Inventory() {
         </div>
 
         {/* Mobile Cards List (Visible on mobile screens < md) */}
-        <div className="block md:hidden divide-y divide-slate-100">
+        <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
           {loading ? (
-            <div className="p-8 text-center text-slate-400 text-xs">Loading inventory register...</div>
+            <div className="p-8 text-center text-slate-400 dark:text-slate-500 text-xs">Loading inventory register...</div>
           ) : filteredList.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 text-xs">No matching inventory items found.</div>
+            <div className="p-8 text-center text-slate-400 dark:text-slate-500 text-xs">No matching inventory items found.</div>
           ) : (
             filteredList.map((item) => {
               const key = item._id
-              const isUpdating = updatingId === key
-              const mode = adjustModes[key] || "SET"
-              const inputVal = adjustInputs[key] ?? ""
               const isLow = (Number(item.quantity) || 0) <= (Number(item.minimumStock) || 0) && (Number(item.minimumStock) || 0) > 0
               const isZero = (Number(item.quantity) || 0) === 0
 
               return (
-                <div key={key} className="p-3.5 space-y-2.5 bg-white">
+                <div key={key} className="p-3.5 space-y-2 bg-white dark:bg-slate-900">
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0 flex-1">
-                      <div className="font-bold text-slate-900 text-xs leading-snug">
+                      <div className="font-bold text-slate-900 dark:text-white text-xs leading-snug">
                         {item.product?.name || "Unknown Product"}
                       </div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
                         {item.product?.brand?.name || "Standard"} {item.product?.size ? `• ${item.product.size}` : ""}
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                          item.stockType === "TP" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"
+                          item.stockType === "TP" ? "bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300" : "bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300"
                         }`}
                       >
                         {item.stockType === "TP" ? "TP" : "Non-TP"}
@@ -252,10 +249,10 @@ export default function Inventory() {
                       <span
                         className={`px-2.5 py-0.5 rounded text-xs font-black border ${
                           isZero
-                            ? "bg-rose-50 text-rose-700 border-rose-200"
+                            ? "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
                             : isLow
-                            ? "bg-amber-50 text-amber-800 border-amber-200"
-                            : "bg-slate-100 text-slate-900 border-slate-200"
+                            ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700"
                         }`}
                       >
                         {item.quantity ?? 0} units
@@ -263,48 +260,9 @@ export default function Inventory() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-                    <span>Selling: <strong className="text-slate-900 font-bold">₹{item.sellingPrice ?? 0}</strong></span>
-                    <span>Min Alert: <strong>{item.minimumStock ?? 0}</strong></span>
-                  </div>
-
-                  {/* Stock Adjustment Row */}
-                  <div className="flex items-center gap-1.5 pt-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setAdjustModes((prev) => ({
-                          ...prev,
-                          [key]: mode === "SET" ? "ADD" : "SET",
-                        }))
-                      }
-                      className="px-2.5 py-1.5 rounded-xl text-[10px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors cursor-pointer shrink-0"
-                    >
-                      {mode === "SET" ? "Set Qty" : "+ Add"}
-                    </button>
-
-                    <input
-                      type="number"
-                      placeholder={mode === "SET" ? "New Qty" : "+10 / -5"}
-                      value={inputVal}
-                      onChange={(e) =>
-                        setAdjustInputs((prev) => ({
-                          ...prev,
-                          [key]: e.target.value,
-                        }))
-                      }
-                      onKeyDown={(e) => e.key === "Enter" && handleAdjustSubmit(item)}
-                      className="flex-1 px-3 py-1.5 border border-slate-200 focus:border-slate-900 rounded-xl text-xs text-center font-bold focus:outline-none bg-slate-50 focus:bg-white"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => handleAdjustSubmit(item)}
-                      disabled={isUpdating || inputVal === ""}
-                      className="px-4 py-1.5 bg-slate-950 hover:bg-black active:scale-95 text-white rounded-xl text-xs font-black transition-all disabled:opacity-40 cursor-pointer shrink-0"
-                    >
-                      {isUpdating ? "Saving..." : "Save"}
-                    </button>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <span>Selling: <strong className="text-slate-900 dark:text-white font-bold">₹{item.sellingPrice ?? 0}</strong></span>
+                    <span>Min Threshold Alert: <strong className="text-slate-900 dark:text-white">{item.minimumStock ?? 0} units</strong></span>
                   </div>
                 </div>
               )
@@ -314,45 +272,41 @@ export default function Inventory() {
 
         {/* Desktop Inventory Table (Visible on md: and up) */}
         <div className="hidden md:block overflow-x-auto no-scrollbar">
-          <table className="min-w-full divide-y divide-slate-200 text-xs">
-            <thead className="bg-slate-50 text-slate-700 font-bold uppercase">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-xs">
+            <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-bold uppercase">
               <tr>
                 <th className="p-3.5 text-left">Product / Brand</th>
                 <th className="p-3.5 text-center">Stock Type</th>
                 <th className="p-3.5 text-center">Current Stock</th>
                 <th className="p-3.5 text-center">Min Threshold</th>
-                <th className="p-3.5 text-center">Selling Price</th>
-                <th className="p-3.5 text-right w-80">Adjust Stock Level</th>
+                <th className="p-3.5 text-right">Selling Price</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="p-8 text-center text-slate-400">
+                  <td colSpan="5" className="p-8 text-center text-slate-400 dark:text-slate-500">
                     Loading inventory register...
                   </td>
                 </tr>
               ) : filteredList.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="p-8 text-center text-slate-400">
+                  <td colSpan="5" className="p-8 text-center text-slate-400 dark:text-slate-500">
                     No matching inventory items found.
                   </td>
                 </tr>
               ) : (
                 filteredList.map((item) => {
                   const key = item._id
-                  const isUpdating = updatingId === key
-                  const mode = adjustModes[key] || "SET"
-                  const inputVal = adjustInputs[key] ?? ""
                   const isLow = (Number(item.quantity) || 0) <= (Number(item.minimumStock) || 0) && (Number(item.minimumStock) || 0) > 0
                   const isZero = (Number(item.quantity) || 0) === 0
 
                   return (
-                    <tr key={key} className="hover:bg-slate-50 transition-colors">
+                    <tr key={key} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       {/* Product Name */}
                       <td className="p-3.5">
-                        <div className="font-bold text-slate-900">{item.product?.name || "Unknown Product"}</div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">
+                        <div className="font-bold text-slate-900 dark:text-white">{item.product?.name || "Unknown Product"}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                           {item.product?.brand?.name || "Standard"} {item.product?.size ? `• ${item.product.size}` : ""}
                         </div>
                       </td>
@@ -361,7 +315,7 @@ export default function Inventory() {
                       <td className="p-3.5 text-center">
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                            item.stockType === "TP" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"
+                            item.stockType === "TP" ? "bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300" : "bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300"
                           }`}
                         >
                           {item.stockType === "TP" ? "TP" : "Non-TP"}
@@ -373,10 +327,10 @@ export default function Inventory() {
                         <span
                           className={`px-2.5 py-1 rounded text-xs font-black border ${
                             isZero
-                              ? "bg-rose-50 text-rose-700 border-rose-200"
+                              ? "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
                               : isLow
-                              ? "bg-amber-50 text-amber-800 border-amber-200"
-                              : "bg-slate-100 text-slate-900 border-slate-200"
+                              ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700"
                           }`}
                         >
                           {item.quantity ?? 0} units
@@ -384,55 +338,13 @@ export default function Inventory() {
                       </td>
 
                       {/* Min Threshold */}
-                      <td className="p-3.5 text-center text-slate-600 font-medium">
+                      <td className="p-3.5 text-center text-slate-600 dark:text-slate-400 font-medium">
                         {item.minimumStock ?? 0}
                       </td>
 
                       {/* Selling Price */}
-                      <td className="p-3.5 text-center font-bold text-slate-900">
+                      <td className="p-3.5 text-right font-bold text-slate-900 dark:text-white">
                         ₹{item.sellingPrice ?? 0}
-                      </td>
-
-                      {/* Action Controls */}
-                      <td className="p-3.5 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setAdjustModes((prev) => ({
-                                ...prev,
-                                [key]: mode === "SET" ? "ADD" : "SET",
-                              }))
-                            }
-                            className="px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors cursor-pointer"
-                            title="Toggle between Set New Stock or Add/Deduct Stock"
-                          >
-                            {mode === "SET" ? "Set Qty" : "+ Add"}
-                          </button>
-
-                          <input
-                            type="number"
-                            placeholder={mode === "SET" ? "New Qty" : "+10 / -5"}
-                            value={inputVal}
-                            onChange={(e) =>
-                              setAdjustInputs((prev) => ({
-                                ...prev,
-                                [key]: e.target.value,
-                              }))
-                            }
-                            onKeyDown={(e) => e.key === "Enter" && handleAdjustSubmit(item)}
-                            className="w-24 px-2.5 py-1.5 border border-slate-200 focus:border-slate-900 rounded-lg text-xs text-center font-bold focus:outline-none bg-slate-50 focus:bg-white transition-all"
-                          />
-
-                          <button
-                            type="button"
-                            onClick={() => handleAdjustSubmit(item)}
-                            disabled={isUpdating || inputVal === ""}
-                            className="px-3.5 py-1.5 bg-slate-950 hover:bg-black active:scale-95 text-white rounded-lg text-xs font-black transition-all shadow-xs disabled:opacity-40 cursor-pointer"
-                          >
-                            {isUpdating ? "Saving..." : "Save"}
-                          </button>
-                        </div>
                       </td>
                     </tr>
                   )
