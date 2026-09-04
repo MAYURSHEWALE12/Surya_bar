@@ -165,12 +165,12 @@ export default function Vendors() {
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-6 rounded-2xl shadow-xs border border-slate-200/90">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800">
         <div>
-          <h2 className="text-lg sm:text-2xl font-black text-slate-900">
+          <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">
             Distributor & Vendor Directory
           </h2>
-          <p className="text-xs font-semibold text-slate-500 mt-0.5">
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
             Manage registered liquor distributors, brewery accounts, wholesale suppliers, and tax credentials
           </p>
         </div>
@@ -183,7 +183,7 @@ export default function Vendors() {
               openCreateForm()
             }
           }}
-          className="px-4 py-2.5 bg-slate-950 hover:bg-black active:scale-95 text-white rounded-xl text-xs sm:text-sm font-black shadow-xs transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+          className="px-4 py-2.5 bg-slate-950 dark:bg-white dark:text-slate-950 hover:bg-black dark:hover:bg-slate-200 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-black shadow-xs transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
         >
           {showForm ? "Cancel / Close Form" : "+ Register New Vendor"}
         </button>
@@ -191,32 +191,32 @@ export default function Vendors() {
 
       {/* KPI Stats Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
-        <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-slate-200/90">
-          <span className="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-wider">Registered Suppliers</span>
-          <p className="text-lg sm:text-2xl font-black text-slate-900 mt-0.5">{vendors.length}</p>
-          <p className="text-[10px] text-slate-500 font-medium">Active trade accounts</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-4 shadow-xs border border-slate-200/90 dark:border-slate-800">
+          <span className="text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Registered Suppliers</span>
+          <p className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white mt-0.5">{vendors.length}</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Active trade accounts</p>
         </div>
-        <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-slate-200/90">
-          <span className="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-wider">GST Compliant Vendors</span>
-          <p className="text-lg sm:text-2xl font-black text-slate-900 mt-0.5">{gstVerifiedCount}</p>
-          <p className="text-[10px] text-slate-500 font-medium">With registered GSTIN number</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-4 shadow-xs border border-slate-200/90 dark:border-slate-800">
+          <span className="text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">GST Compliant Vendors</span>
+          <p className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white mt-0.5">{gstVerifiedCount}</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">With registered GSTIN number</p>
         </div>
-        <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-slate-200/90">
-          <span className="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-wider">Supply Channels</span>
-          <p className="text-lg sm:text-2xl font-black text-emerald-700 mt-0.5">Verified</p>
-          <p className="text-[10px] text-slate-500 font-medium">Excise & Commercial channels</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-4 shadow-xs border border-slate-200/90 dark:border-slate-800">
+          <span className="text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Supply Channels</span>
+          <p className="text-lg sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">Verified</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Excise & Commercial channels</p>
         </div>
       </div>
 
       {/* Form */}
       {showForm && (
-        <div className="bg-white rounded-2xl shadow-xs border border-slate-200/90 p-4 sm:p-6 animate-in fade-in zoom-in-95 duration-100">
-          <div className="flex justify-between items-center pb-3 border-b border-slate-200 mb-4">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 p-4 sm:p-6 animate-in fade-in zoom-in-95 duration-100">
+          <div className="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
             <div>
-              <h3 className="font-black text-slate-900 text-sm sm:text-base">
+              <h3 className="font-black text-slate-900 dark:text-white text-sm sm:text-base">
                 {editingVendor ? `Edit Vendor: ${editingVendor.name}` : "Register Vendor / Distributor"}
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {editingVendor ? "Update contact, tax ID, or address details" : "Add profile details to associate with inward purchase shipments"}
               </p>
             </div>
@@ -226,7 +226,7 @@ export default function Vendors() {
                 setShowForm(false)
                 setEditingVendor(null)
               }}
-              className="text-xs text-slate-400 hover:text-slate-700 font-bold cursor-pointer"
+              className="text-xs text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-bold cursor-pointer"
             >
               ✕ Close
             </button>
@@ -235,7 +235,7 @@ export default function Vendors() {
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
               <div>
-                <label className="block text-[11px] font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                   Vendor / Firm Name *
                 </label>
                 <input
@@ -244,12 +244,12 @@ export default function Vendors() {
                   placeholder="e.g. KSBC Depot, United Spirits, Som Distilleries"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border border-slate-200 focus:border-slate-900 rounded-xl text-xs sm:text-sm font-medium focus:outline-none bg-slate-50/50 focus:bg-white transition-all"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 focus:border-slate-900 dark:focus:border-slate-400 rounded-xl text-xs sm:text-sm font-medium focus:outline-none bg-slate-50/50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                   Contact Phone Number
                 </label>
                 <input
@@ -257,12 +257,12 @@ export default function Vendors() {
                   placeholder="e.g. +91 98765 43210"
                   value={formData.contactNumber}
                   onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border border-slate-200 focus:border-slate-900 rounded-xl text-xs sm:text-sm font-medium focus:outline-none bg-slate-50/50 focus:bg-white transition-all"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 focus:border-slate-900 dark:focus:border-slate-400 rounded-xl text-xs sm:text-sm font-medium focus:outline-none bg-slate-50/50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                   GSTIN Tax Registration
                 </label>
                 <input
@@ -270,14 +270,14 @@ export default function Vendors() {
                   placeholder="e.g. 29ABCDE1234F1Z5"
                   value={formData.gstin}
                   onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border border-slate-200 focus:border-slate-900 rounded-xl text-xs sm:text-sm font-mono font-bold focus:outline-none bg-slate-50/50 focus:bg-white transition-all"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 focus:border-slate-900 dark:focus:border-slate-400 rounded-xl text-xs sm:text-sm font-mono font-bold focus:outline-none bg-slate-50/50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
               <div>
-                <label className="block text-[11px] font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                   Email Address
                 </label>
                 <input
@@ -285,12 +285,12 @@ export default function Vendors() {
                   placeholder="orders@distributor.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border border-slate-200 focus:border-slate-900 rounded-xl text-xs sm:text-sm font-medium focus:outline-none bg-slate-50/50 focus:bg-white transition-all"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 focus:border-slate-900 dark:focus:border-slate-400 rounded-xl text-xs sm:text-sm font-medium focus:outline-none bg-slate-50/50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                   Depot Location / Address
                 </label>
                 <input
@@ -298,7 +298,7 @@ export default function Vendors() {
                   placeholder="Street, City, State, PIN"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border border-slate-200 focus:border-slate-900 rounded-xl text-xs sm:text-sm font-medium focus:outline-none bg-slate-50/50 focus:bg-white transition-all"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 focus:border-slate-900 dark:focus:border-slate-400 rounded-xl text-xs sm:text-sm font-medium focus:outline-none bg-slate-50/50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all"
                 />
               </div>
             </div>
@@ -307,14 +307,14 @@ export default function Vendors() {
               <button
                 type="submit"
                 disabled={submitting || !formData.name}
-                className="px-6 py-3 bg-slate-950 hover:bg-black active:scale-95 text-white font-black rounded-xl text-xs sm:text-sm shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                className="px-6 py-3 bg-slate-950 dark:bg-white dark:text-slate-950 hover:bg-black dark:hover:bg-slate-200 active:scale-95 text-white font-black rounded-xl text-xs sm:text-sm shadow-xs transition-all disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? "Saving..." : "Save Distributor Profile"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs sm:text-sm transition-colors cursor-pointer"
+                className="px-5 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs sm:text-sm transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -324,11 +324,11 @@ export default function Vendors() {
       )}
 
       {/* Vendors Directory */}
-      <div className="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
-        <div className="p-3.5 sm:p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row gap-2.5 justify-between items-stretch sm:items-center">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/90 dark:border-slate-800 overflow-hidden">
+        <div className="p-3.5 sm:p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex flex-col sm:flex-row gap-2.5 justify-between items-stretch sm:items-center">
           <div>
-            <h3 className="font-black text-slate-900 text-xs sm:text-sm">Registered Vendors Directory</h3>
-            <span className="text-[11px] text-slate-500 font-semibold">{vendors.length} vendors registered</span>
+            <h3 className="font-black text-slate-900 dark:text-white text-xs sm:text-sm">Registered Vendors Directory</h3>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">{vendors.length} vendors registered</span>
           </div>
 
           <div className="relative w-full sm:w-72">
@@ -337,12 +337,12 @@ export default function Vendors() {
               placeholder="Search vendor, phone, or GSTIN..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3.5 py-1.5 bg-white border border-slate-200 focus:border-slate-900 rounded-xl text-xs sm:text-sm font-medium focus:outline-none transition-all"
+              className="w-full px-3.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-slate-900 dark:focus:border-slate-400 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-all"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-2 text-slate-400 hover:text-slate-700 text-xs font-bold cursor-pointer"
+                className="absolute right-3 top-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -351,50 +351,50 @@ export default function Vendors() {
         </div>
 
         {/* Mobile Vendor Cards (< md screens) */}
-        <div className="block md:hidden divide-y divide-slate-100">
+        <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
           {loading ? (
-            <div className="p-8 text-center text-slate-400 text-xs">Loading vendors...</div>
+            <div className="p-8 text-center text-slate-400 dark:text-slate-500 text-xs">Loading vendors...</div>
           ) : filteredVendors.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 text-xs">
+            <div className="p-8 text-center text-slate-400 dark:text-slate-500 text-xs">
               No vendors found matching search. Tap "+ Register New Vendor" above.
             </div>
           ) : (
             filteredVendors.map((v) => (
-              <div key={v._id} className="p-3.5 space-y-2 bg-white">
+              <div key={v._id} className="p-3.5 space-y-2 bg-white dark:bg-slate-900">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm">{v.name}</h4>
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{v.name}</h4>
                     {v.contactNumber && (
                       <a
                         href={`tel:${v.contactNumber}`}
-                        className="text-xs text-slate-700 font-bold hover:underline inline-flex items-center gap-1 mt-0.5"
+                        className="text-xs text-slate-700 dark:text-slate-300 font-bold hover:underline inline-flex items-center gap-1 mt-0.5"
                       >
                         {v.contactNumber}
                       </a>
                     )}
                   </div>
-                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-black rounded-md">
+                  <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px] font-black rounded-md">
                     ACTIVE
                   </span>
                 </div>
 
-                <div className="bg-slate-50 p-2.5 rounded-xl text-xs text-slate-600 space-y-1 border border-slate-100">
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl text-xs text-slate-600 dark:text-slate-300 space-y-1 border border-slate-100 dark:border-slate-800">
                   {v.gstin && (
                     <div className="flex justify-between">
-                      <span className="text-slate-400 font-medium">GSTIN:</span>
-                      <span className="font-mono font-bold text-slate-900">{v.gstin}</span>
+                      <span className="text-slate-400 dark:text-slate-500 font-medium">GSTIN:</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">{v.gstin}</span>
                     </div>
                   )}
                   {v.address && (
                     <div className="flex justify-between">
-                      <span className="text-slate-400 font-medium">Address:</span>
-                      <span className="font-medium text-slate-800 truncate pl-2">{v.address}</span>
+                      <span className="text-slate-400 dark:text-slate-500 font-medium">Address:</span>
+                      <span className="font-medium text-slate-800 dark:text-slate-200 truncate pl-2">{v.address}</span>
                     </div>
                   )}
                   {v.email && (
                     <div className="flex justify-between">
-                      <span className="text-slate-400 font-medium">Email:</span>
-                      <span className="font-medium text-slate-800">{v.email}</span>
+                      <span className="text-slate-400 dark:text-slate-500 font-medium">Email:</span>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">{v.email}</span>
                     </div>
                   )}
                 </div>
@@ -403,14 +403,14 @@ export default function Vendors() {
                   <button
                     type="button"
                     onClick={() => openEditForm(v)}
-                    className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition-colors"
+                    className="flex-1 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-slate-700 transition-colors"
                   >
                     ✏️ Edit Profile
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(v)}
-                    className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-colors"
+                    className="px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-bold text-xs rounded-xl border border-rose-200 dark:border-rose-800 transition-colors"
                   >
                     🗑️
                   </button>
@@ -422,8 +422,8 @@ export default function Vendors() {
 
         {/* Desktop Vendors Table (md: and up) */}
         <div className="hidden md:block overflow-x-auto no-scrollbar">
-          <table className="min-w-full divide-y divide-slate-200 text-xs">
-            <thead className="bg-slate-50 text-slate-700 font-bold uppercase">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-xs">
+            <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-bold uppercase">
               <tr>
                 <th className="p-3.5 text-left">Vendor / Distributor</th>
                 <th className="p-3.5 text-left">Contact Phone</th>
@@ -433,47 +433,47 @@ export default function Vendors() {
                 <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="p-8 text-center text-slate-400">
+                  <td colSpan="6" className="p-8 text-center text-slate-400 dark:text-slate-500">
                     Loading vendors...
                   </td>
                 </tr>
               ) : filteredVendors.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="p-8 text-center text-slate-400">
+                  <td colSpan="6" className="p-8 text-center text-slate-400 dark:text-slate-500">
                     No vendors registered yet. Click "+ Register New Vendor" above.
                   </td>
                 </tr>
               ) : (
                 filteredVendors.map((v) => (
-                  <tr key={v._id} className="hover:bg-slate-50 transition-colors">
-                    <td className="p-3.5 font-bold text-slate-900">
+                  <tr key={v._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="p-3.5 font-bold text-slate-900 dark:text-white">
                       <div>{v.name}</div>
-                      {v.email && <div className="text-[10px] text-slate-400 font-normal">{v.email}</div>}
+                      {v.email && <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">{v.email}</div>}
                     </td>
-                    <td className="p-3.5 text-slate-800 font-medium">
+                    <td className="p-3.5 text-slate-800 dark:text-slate-200 font-medium">
                       {v.contactNumber || v.phone ? (
                         <a href={`tel:${v.contactNumber || v.phone}`} className="hover:underline">
                           {v.contactNumber || v.phone}
                         </a>
                       ) : (
-                        <span className="text-slate-300">-</span>
+                        <span className="text-slate-300 dark:text-slate-600">-</span>
                       )}
                     </td>
-                    <td className="p-3.5 font-mono font-bold text-slate-800">
+                    <td className="p-3.5 font-mono font-bold text-slate-800 dark:text-slate-200">
                       {v.gstin ? (
-                        <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px]">{v.gstin}</span>
+                        <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[11px] border border-slate-200 dark:border-slate-700">{v.gstin}</span>
                       ) : (
-                        <span className="text-slate-300">-</span>
+                        <span className="text-slate-300 dark:text-slate-600">-</span>
                       )}
                     </td>
-                    <td className="p-3.5 text-slate-600">
-                      {v.address || <span className="text-slate-300">-</span>}
+                    <td className="p-3.5 text-slate-600 dark:text-slate-400">
+                      {v.address || <span className="text-slate-300 dark:text-slate-600">-</span>}
                     </td>
                     <td className="p-3.5 text-center">
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-black rounded-md">
+                      <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px] font-black rounded-md">
                         ACTIVE
                       </span>
                     </td>
@@ -482,7 +482,7 @@ export default function Vendors() {
                         <button
                           type="button"
                           onClick={() => openEditForm(v)}
-                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg text-xs border border-slate-200 transition-all cursor-pointer"
+                          className="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-lg text-xs border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
                           title="Edit Vendor"
                         >
                           ✏️ Edit
@@ -490,7 +490,7 @@ export default function Vendors() {
                         <button
                           type="button"
                           onClick={() => handleDelete(v)}
-                          className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg text-xs border border-rose-200 transition-all cursor-pointer"
+                          className="px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-bold rounded-lg text-xs border border-rose-200 dark:border-rose-800 transition-all cursor-pointer"
                           title="Delete Vendor"
                         >
                           🗑️
