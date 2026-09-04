@@ -234,6 +234,12 @@ if ($route === '/api/backup/restore' && $method === 'POST') {
     exit;
 }
 
+if ($route === '/api/backup/reset' && $method === 'POST') {
+    $user = authenticate(['ADMIN']);
+    BackupController::resetDatabase($user);
+    exit;
+}
+
 // 404
 http_response_code(404);
 echo json_encode(["message" => "Endpoint not found: " . $route]);

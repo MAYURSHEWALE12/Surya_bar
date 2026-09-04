@@ -133,4 +133,51 @@ class BackupController {
             echo json_encode(["message" => "Database restore failed: " . $e->getMessage()]);
         }
     }
+
+    public static function resetDatabase($currentUser) {
+        $db = (new Database())->getConnection();
+
+        try {
+            $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
+            $db->beginTransaction();
+
+            $wipeTables = [
+                'credit_transactions',
+                'sale_items',
+                'sales',
+                'purchase_items',
+                'purchases',
+                'inventories',
+                'products',
+                'categories',
+                'brands',
+                'customers',
+                'vendors',
+                'audit_logs'
+            ];
+
+            foreach ($wipeTables as $tbl) {
+                $db->exec("TRUNCATE TABLE `$tbl`");
+            }
+
+            // Log this wipe action in audit_logs
+            $stmtAudit = $db->prepare("INSERT INTO audit_logs (user_id, action, entity, details) VALUES (:uid, 'RESET_DATABASE', 'System', 'Database reset: All sales, inventory, and transactions cleared. Logins preserved.')");
+            $stmtAudit->execute([
+                ':uid' => $currentUser['id'] ?? 1
+            ]);
+
+            $db->commit();
+            $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
+
+            echo json_encode([
+                "success" => true,
+                "message" => "Database reset complete! All sample sales, stock, and transaction logs have been wiped clean. Your Admin & Cashier accounts are preserved and active."
+            ]);
+        } catch (Exception $e) {
+            $db->rollBack();
+            $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
+            http_response_code(500);
+            echo json_encode(["message" => "Database reset failed: " . $e->getMessage()]);
+        }
+    }
 }
