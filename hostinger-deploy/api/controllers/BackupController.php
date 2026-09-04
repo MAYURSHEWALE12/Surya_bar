@@ -139,7 +139,6 @@ class BackupController {
 
         try {
             $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
-            $db->beginTransaction();
 
             $wipeTables = [
                 'credit_transactions',
@@ -157,7 +156,8 @@ class BackupController {
             ];
 
             foreach ($wipeTables as $tbl) {
-                $db->exec("TRUNCATE TABLE `$tbl`");
+                $db->exec("DELETE FROM `$tbl`");
+                $db->exec("ALTER TABLE `$tbl` AUTO_INCREMENT = 1");
             }
 
             // Log this wipe action in audit_logs
@@ -166,17 +166,17 @@ class BackupController {
                 ':uid' => $currentUser['id'] ?? 1
             ]);
 
-            $db->commit();
             $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
 
+            header('Content-Type: application/json');
             echo json_encode([
                 "success" => true,
                 "message" => "Database reset complete! All sample sales, stock, and transaction logs have been wiped clean. Your Admin & Cashier accounts are preserved and active."
             ]);
         } catch (Exception $e) {
-            $db->rollBack();
             $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
             http_response_code(500);
+            header('Content-Type: application/json');
             echo json_encode(["message" => "Database reset failed: " . $e->getMessage()]);
         }
     }
